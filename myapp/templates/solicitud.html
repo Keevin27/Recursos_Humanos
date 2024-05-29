@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud de Ausencia</title>
+    <style>
+        body {
+            
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 1300px;
+        }
+        .header {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .header .top-button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .table-container {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+        .table-wrapper {
+            width: 80%;
+            height: 150px; /* Altura fija para 3 registros */
+            overflow-y: auto; /* Scroll vertical */
+            margin-right: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        colgroup col {
+            width: 14.28%;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        .approval-buttons {
+            display: flex;
+            flex-direction: column;
+        }
+        .approval-buttons .approve-deny-button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .solicitar-button{
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            
+        }
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+            top: 20px;
+        }
+        .file-input{
+            display: none;
+        }
+        .file-button {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+        }
+        .texto-boton-comprobante{
+            display: inline-block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .texto-boton-comprobante i{
+            margin-right: 5px;
+        }
+        input[type="file" ]{
+            margin-bottom: 15px;
+            
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        select, textarea{
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .button-group {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .button-group button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            margin: 0 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .calendar-container {
+            display: inline-block;
+            width: 50%;
+            position: relative;
+            top: 20px;
+        }
+        .description-container {
+            display: inline-block;
+            width: 45%;
+            vertical-align: top;
+            position: relative;
+            top: 20px;
+        }
+        #Iniciar-invisible{
+            display: none; /* Ocultar inicialmente */
+            margin-top: 20px;
+        }
+        .seleccionado {
+            background-color: lightblue;
+        }
+        #BotonOff{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <form method="post">
+    <div class="container">
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table id="absence-table">
+                    <colgroup>
+                        <col>
+                        <col>
+                        <col>
+                        <col>
+                        <col>
+                        <col>
+                        <col>
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>N° Solicitud</th>
+                            <th>Nombre solicitante</th>
+                            <th>Fecha de solicitud</th>
+                            <th>Fecha de inicio</th>
+                            <th>Fecha final</th>
+                            <th>Motivo</th>
+                            <th>Estado de solicitud</th>
+                        </tr>
+
+                    </thead>
+                    <tbody>
+                        {% for solicitud in solicitudes %}
+                        <tr name="numSolicitudSelect" id="{{ solicitud.numSolicitud }}" class="registro" onclick="seleccionarRegistro('{{ solicitud.numSolicitud }}'), MostrarBotones()">
+                            <td>{{ solicitud.numSolicitud }}</td>
+                            <td>{{ solicitud.solicitante.nombre }}</td>
+                            <td>{{ solicitud.fechaSolicitud }}</td>
+                            <td>{{ solicitud.ausencia.fechaInicio }}</td>
+                            <td>{{ solicitud.ausencia.fechaFin }}</td>
+                            <td>{{ solicitud.ausencia.motivoAusencia }}</td>
+                            <td>{{ solicitud.estadoSolicitud}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="approval-buttons">
+                <div id="BotonOff">
+                    <form action="{% url 'ausencia' registro.id %}" method="post">
+                        <button class="approve-deny-button" name="accion" type="button" value="Aprobada" onclick="seleccionarRegistro(id),OcultarBotones()">Aprobar</button>
+                    </form>
+                    <form action="{% url 'cambiar_estado' registro.id %}" method="post">
+                        <button class="approve-deny-button" name="accion" type="button" value="Denegada" onclick="seleccionarRegistro(id),OcultarBotones()">Denegar</button>
+                    </form>
+                </div>
+                <button class="solicitar-button" type="button" onclick="toggleAbsenceForm()" >Solicitar Ausencia</button>
+            </div>
+        </div>
+    </form>
+        <form method="post">
+        <div id="Iniciar-invisible">
+            {% csrf_token %}
+            <div class="form-group" >
+                <label for="motivo">Seleccione el motivo de su ausencia:</label>
+                <select id="motivoAusencia" name="motivoAusencia" required>
+                    <option value="">Seleccione una opcion</option>
+                    <option value="Enfermedad">Enfermedad</option>
+                    <option value="Matrimonio">Matrimonio</option>
+                    <option value="Mudanza">Mudanza</option>
+                    <option value="Familiar">Nacimiento, fallecimiento, accidente o enfermedad grave de un familiar</option>
+                    <option value="Deberes">Deberes inexcusables</option>
+                    <option value="Prenatal">Exámenes prenatales o técnicas de preparación al parto</option>
+                    <option value="Sindical">Funciones sindicales</option>
+                    <option value="Nacimiento">Nacimiento de hijos, lactancia y relacionados</option>
+                    <option value="Otros">Otros</option>
+                </select>
+            </div>
+        
+            <div class="description-container" >
+                <label for="descripcion">Descripción:</label>
+                <textarea id="descripcion" rows="4" name="descripcion"></textarea>
+            </div>
+            <div class="calendar-container">
+                <label for="calendar">Días inicio solicitado:</label>
+                <input type="date" id="fechaInicio" value="2024-05-15" name="fechaInicio">
+                <label for="calendar">Día final solicitado:</label>
+                <input type="date" id="fechaFinal" value="2024-05-15" name="fechaFinal">
+            </div>
+            <div class="form-group ">
+                <label for="comprobante">Agregar comprobante:</label>
+                <div class="file-button">
+                    <input type="file" id="comprobante" class="file-input">
+                    <label for="comprobante" class="texto-boton-comprobante"><i>Archivo</i></label>
+                </div>
+            </div>
+            <div class="button-group">
+                <form action="/ausencia/" method="POST">
+                    {% csrf_token %}
+                    <button >Guardar</button>
+                </form>
+                <button>Cancelar</button>
+            </div>
+        </div>
+        </form> 
+    </div>
+    <script>
+            document.querySelector('.file-label').addEventListener('click', function() {
+            document.querySelector('.file-input').click();
+        });
+
+        function toggleAbsenceForm() {
+            var form = document.getElementById('Iniciar-invisible');
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+
+        function seleccionarRegistro(id) {
+            // Deseleccionar todos los registros
+            var registros = document.querySelectorAll('.registro');
+            registros.forEach(function(registro) {
+                registro.classList.remove('seleccionado');
+            });
+
+            // Seleccionar el registro clickeado
+            var registroSeleccionado = document.getElementById(id);
+            registroSeleccionado.classList.add('seleccionado');
+        }
+
+        function MostrarBotones() {
+                var form = document.getElementById('BotonOff');
+                if (form.style.display === 'none' || form.style.display === '') {
+                    form.style.display = 'block';
+                } else {
+                    form.style.display = 'block';
+                }
+        }
+
+        function OcultarBotones() {
+                var botones = document.getElementById('BotonOff');
+                if (botones.style.display === 'block'){
+                    botones.style.display = 'none';
+                } else {
+                    botones.style.display = 'none';
+                }
+        }
+
+    </script>
+</body>
+</html>
