@@ -3,10 +3,9 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from datetime import datetime, date
-from .models import Empleado
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import random
+from .models import Empleado, Bono
+import random, string
+from django.urls import reverse
 
 # Create your views here.
 def gestionarEmpleado(request):
@@ -104,3 +103,51 @@ def iniciarSesion(request):
 def cerrarSesion(request):
     logout(request)
     return redirect('iniciar_sesion')
+
+def gestionarBono(request, empleadoId):
+    bonos = Bono.objects.all()
+    empleado = get_object_or_404(Empleado, pk = empleadoId)
+    return render(request, 'gestionarBono.html', {'bonos':bonos, 'empleado':empleado})
+
+def generate_code(length=6):
+    characters = string.ascii_uppercase + string.digits
+    codigo = ''.join(random.choices(characters, k=length))
+    while Bono.objects.filter(codigo = codigo).count() > 0:
+        codigo = ''.join(random.choices(characters, k=length))
+    
+    return codigo
+
+def actualizarBono(request, empleadoId, bonoId):
+    bono = get_object_or_404(Bono, pk = bonoId)
+    url = reverse('gestionar_bono', args=[empleadoId])
+    if request.method == 'POST':
+        try:
+            bono.justificacion = request.POST['justificacion']
+            bono.monto = request.POST['montoBono']
+            bono.save()
+            return redirect(url)
+        except:
+            return redirect(url)
+    return redirect(url)
+
+def crearBono(request, empleadoId):
+    if request.method == 'GET':
+        return redirect('gestionar_bono/{empleadoId}')
+    else:
+        try:
+            empleado = get_object_or_404(Empleado, pk=empleadoId)
+            codigo = generate_code()
+            justificacion = request.POST['justificacion']
+            monto = request.POST['montoBono']
+            bono = Bono(codigo = codigo, justificacion=justificacion, monto=monto, empleado=empleado)
+            bono.save()
+            return redirect('/gestionar_bono/'+empleadoId)
+        except:
+            return redirect('/gestionar_bono/'+empleadoId)
+
+def eliminarBono(request, empleadoId, bonoId):
+    bono = get_object_or_404(Bono, pk = bonoId)
+    url = reverse('gestionar_bono', args=[empleadoId])
+    if request.method == 'POST':
+        bono.delete()
+    return redirect(url)

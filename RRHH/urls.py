@@ -17,7 +17,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from myapp.views import iniciarSesion, cerrarSesion, ingresarEmpleado, gestionarEmpleado, actualizarEmpleado, eliminarEmpleado
+from myapp.views import iniciarSesion, cerrarSesion, ingresarEmpleado, gestionarEmpleado, actualizarEmpleado, eliminarEmpleado, gestionarBono, crearBono, actualizarBono, eliminarBono
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,5 +26,9 @@ urlpatterns = [
     path('gestionar_empleado/', gestionarEmpleado, name='gestionar_empleado'),
     path('gestionar_empleado/ingresar_empleado/', ingresarEmpleado, name='ingresar_empleado'),
     path('gestionar_empleado/actualizar_empleado/<empleadoId>', actualizarEmpleado, name='actualizar_empleado'),
-    path('gestionar_empleado/eliminar_empleado/<empleadoId>', eliminarEmpleado, name="eliminar_empleado")
+    path('gestionar_empleado/eliminar_empleado/<empleadoId>', eliminarEmpleado, name="eliminar_empleado"),
+    path('gestionar_bono/<empleadoId>', gestionarBono, name='gestionar_bono'),
+    path('gestionar_bono/crear/<empleadoId>', crearBono, name='crear_bono'),
+    path('gestionar_bono/actualizar/<empleadoId>/<bonoId>', actualizarBono, name='actualizar_bono'),
+    path('gestionar_bono/eliminar/<empleadoId>/<bonoId>', eliminarBono, name='eliminar_bono'),
 ]

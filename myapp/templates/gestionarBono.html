@@ -1,0 +1,122 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Bonos</title>
+    <link rel="stylesheet" type="text/css" href='{% static "gestionarBono.css" %}'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <h1>Gestión de Bonos</h1>
+    </header>
+    <main>
+        
+        <section class="asignar-bono">
+            <button onclick="redirectTo('/gestionar_empleado/')"><i class="fas fa-arrow-left"></i> Gestionar empleado</button>
+            <div class="container">
+                <h2>Asignar Bono</h2>
+                <form id="redirect-form" method="POST">
+                    {% csrf_token %}
+                    <label for="empleado">Empleado:</label>
+                    <input type="text" id="empleado" name="empleado" value="{{ empleado.nombre }}" disabled>
+                    <input type="text" id="ide" ></input>
+                    <label for="montoBono">Monto del Bono:</label>
+                    <input type="number" id="montoBono" name="montoBono" placeholder="Ingrese el monto del bono">
+                    <label for="justificacion">Justificación:</label>
+                    <textarea id="justificacion" name="justificacion" placeholder="Ingrese la justificación del bono"></textarea>
+                    <button id="crear" onclick="redirectToUrlcrear('/gestionar_bono/crear/{{ empleado.id }}')">Crear</button>
+                    <button id="actualizar" class="btn btn-primary actualizar">Actualizar</button>
+                    <br>
+                </form>
+                <form id="cancel-form" method="POST">
+                    {% csrf_token %}
+                    <button id="cancelar" class="btn btn-primary cancel-btn">Cancelar</button>
+                </form>
+            </div>   
+        </section>
+        <section>
+            <div class="container2">
+                <h2>Lista de Bonos</h2>
+                <table id="registros-bonos">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Cargo</th>
+                            <th>Nombre</th>
+                            <th>Bono</th>
+                            <th>Justificación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bono in bonos %}
+                        <tr>
+                            <td>{{ bono.codigo }}</td>
+                            <td>{{ bono.empleado.area }}</td>
+                            <td>{{ bono.empleado.nombre }}</td>
+                            <td>{{ bono.monto }}</td>
+                            <td>{{ bono.justificacion }}</td>
+                            <td >
+                                <button class="btn btn-primary update-btn" data-urlcancel="/gestionar_bono/{{ empleado.id }}" data-nombre="{{ bono.empleado.nombre }}" data-ide = "{{ bono.id }}" data-monto ="{{ bono.monto }}" data-justificacion="{{ bono.justificacion }}" data-urlactualizar="/gestionar_bono/actualizar/{{ empleado.id }}/{{ bono.id }}"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-primary delete-btn" onclick="redirectToEliminar('/gestionar_bono/eliminar/{{ empleado.id }}/{{ bono.id }}')"><i class="fas fa-trash-alt"></i></button>
+                                <form id="eliminar-form" method="POST">
+                                    {% csrf_token %}
+                                    <button id="eliminar"><i class="fas fa-trash-alt"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
+
+<script>
+    function redirectToEliminar(url){
+        if (confirm('¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.')) {
+            document.getElementById('eliminar-form').action = url;
+            document.getElementById('eliminar-form').submit();
+        }
+    }
+    function confirmDelete(url) {
+        if (confirm('¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer.')) {
+            window.location.href = url;
+        }
+    }
+    function redirectToUrlcrear(url) {
+        document.getElementById('redirect-form').action = url;
+        document.getElementById('redirect-form').submit();
+    }
+    document.querySelectorAll('.update-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const monto = this.getAttribute('data-monto');
+            const justificacion = this.getAttribute('data-justificacion');
+            const urlActualizar = this.getAttribute('data-urlactualizar');
+            const nombre = this.getAttribute('data-nombre');
+            const urlCancelar = this.getAttribute('data-urlcancel');
+
+            document.getElementById('redirect-form').action = urlActualizar;
+            document.getElementById('empleado').value = nombre;
+            document.getElementById('montoBono').value = monto;
+            document.getElementById('justificacion').value = justificacion
+            document.getElementById('crear').style.display = "none";
+            document.getElementById('cancelar').style.display="block";
+            document.getElementById('actualizar').style.display="block";
+            document.getElementById('cancel-form').action = urlCancelar;
+        });
+    });
+    document.querySelectorAll('.eliminar-btn').forEach(button => {
+        button.addEventListener('click', function() {
+
+        });
+    });
+    function redirectTo(url){
+        window.location.href=url;
+    }
+</script>
