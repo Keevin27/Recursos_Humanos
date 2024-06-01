@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reportes</title>
+        <style>
+            body {
+            
+            font-family: Arial, sans-serif;
+            background-color: #5c5c5c;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container{
+            background-color: white;
+            width: 900px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 80px;
+        }
+        .listaReportes{
+            padding: 10px;
+            background-color: #fff4f4;
+            display: flex;
+            align-items:flex-start;
+            justify-content: space-between;
+            width: 80%;
+            height: 150px; /* Altura fija para 5 registros */
+            overflow-y: auto; /* Scroll vertical */
+            margin-right: 10px;
+            border: 1px solid #979797;
+        }
+
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            background-color: #ffe3e3;
+        }
+        .listaReportes th, .listaReportes td{
+            border: 1px solid #000;
+            padding: 8px;
+            text-align:left;
+        }
+        .form-reporte{
+
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .form-reporte label{
+            margin-right: 10px;
+        }
+        .form-reporte textarea{
+            width: 100%;
+            height: 100px;
+        }
+        .form-reporte .botones {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 30%;
+            margin-left: 300px;
+        }
+        .botones{
+            display: inline-block;
+            width: 50%;
+            position: relative;
+            top: 20px;
+        }
+        .form-reporte button{
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color:#7a1919;
+            color: white;
+        }
+        th,td{
+            padding: 8px;
+            text-align: left;
+            border: 1px solid black;
+        }
+        .seleccionado {
+            background-color: rgba(145, 28, 17, 0.704);
+        }
+        #Iniciar-invisible{
+            display: none; /* Ocultar inicialmente */
+            margin-top: 20px;
+        }
+        #botonInvicible{
+            display: none;
+        }
+        .nuevoRep button{
+            margin-top: 20px;
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color:#7a1919;
+            color: white;
+            margin-left: 300px;
+        }
+        .contenedorDescripcion{
+            display: inline-block;
+            width: 45%;
+            vertical-align: top;
+            position: relative;
+            top: 20px;
+        }
+        #eliminarBtn{
+            display: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            background-color: #7a1919;
+            color: white;
+            margin-top: 10px;
+        }
+        </style>
+</head>
+<body>
+    <form method="post">
+        <div class="container">
+            <div class="listaReportes">
+                <table id="tablaReportes">
+                    <thead>
+                        <tr>
+                            <th>Empleado</th>
+                            <th>Descripción</th>
+                            <th>Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reporte in reportes %}
+                        <tr id="{{ reporte.numReporte }}" data-id="{{ reporte.numReporte }}" class="registro" onclick="mostrarBoton(), seleccionarRegistro('{{ reporte.numReporte }}')">
+                            <td>{{ reporte.empleado.nombre  }}</td>
+                            <td>{{ reporte.descripcionReporte }}</td>
+                            <td>{{ reporte.fechaReporte }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="nuevoRep">
+                <button class="nuevoRep" type="button" onclick="mostrarCampos(),ocultarBoton()">Nuevo Reporte</button>
+                <button id="eliminarBtn" type="button" onclick="eliminarRegistro()">Eliminar reporte</button>
+            </div>
+            <div class="form-reporte">
+                {% csrf_token %}
+                
+                <div id="Iniciar-invisible">
+                    <div clas="contenedorDescripcion">
+                        <label for="descripcion">Descripción:</label>
+                        <textarea id="descripcion" name="descripcion" rows="4" placeholder="Descripcion del reporte"></textarea>
+                    </div>
+                    <div class="botones">
+                        <form  action="/reportes/" method="post">
+                            {% csrf_token %}
+                            <button class="agregarBtn" type="button">Añadir reporte</button>
+                        </form>
+                        <form action="/reportes/" method="get">
+                            <button class="cancelarBtn">Cancelar reporte</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</body>
+</html>
+<script>
+    
+    function seleccionarRegistro(id) {
+            // Deseleccionar todos los registros
+            var registros = document.querySelectorAll('.registro');
+            registros.forEach(function(registro) {
+                registro.classList.remove('seleccionado');
+            });
+
+            // Seleccionar el registro clickeado
+            var registroSeleccionado = document.getElementById(id);
+            registroSeleccionado.classList.add('seleccionado');
+            document.getElementById('registro_id').value = id;
+
+            // Mostrar botón de eliminar
+            var eliminarBtn = document.getElementById('eliminarBtn');
+            var campos = document.getElementById('Iniciar-invisible');
+            if (campos.style.display=='block'){
+                eliminarBtn.style.display = 'none';
+            } else{
+                eliminarBtn.style.display = 'block';
+            }
+        }
+
+    function mostrarCampos(){
+        var form = document.getElementById('Iniciar-invisible');
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+    
+    function mostrarBoton(){
+        var form = document.getElementById('eliminarBtn');
+        var campos = document.getElementById('Iniciar-invisible')
+        if (form.style.display === 'none' && campos.style.display === 'none') {
+                form.style.display = 'block';
+            } 
+        else if(form.style.display === 'none' && campos.style.display === 'block'){
+                form.style.display = 'none'
+        }
+        else{
+            form.style.display='block'
+        }
+    }
+
+    function ocultarBoton(){
+        var form = document.getElementById('eliminarBtn');
+            if (form.style.display === 'block' || form.style.display === '') {
+                form.style.display = 'none';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+    
+    function eliminarRegistro(){
+        var registroSeleccionado = document.querySelector('.registro.seleccionado');
+            if (registroSeleccionado) {
+                var id = registroSeleccionado.getAttribute('data-id');
+
+                // Hacer la solicitud de eliminación al servidor
+                fetch(`/reportes/eliminar_reporte/${id}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}' // Ajusta esto si usas otro método de CSRF
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        registroSeleccionado.remove();
+                        document.getElementById('eliminarBtn').style.display = 'none';
+                    } else {
+                        alert('Error al eliminar el reporte');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            } else {
+                alert('Seleccione un registro para eliminar');
+            }
+    }
+    
+</script>

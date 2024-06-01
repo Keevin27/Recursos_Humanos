@@ -8,7 +8,7 @@
         body {
             
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #5c5c5c;
             margin: 0;
             padding: 0;
             display: flex;
@@ -42,10 +42,11 @@
             justify-content: space-between;
         }
         .table-wrapper {
-            width: 80%;
-            height: 150px; /* Altura fija para 3 registros */
+            width: 90%;
+            height: 250px; /* Altura fija para 3 registros */
             overflow-y: auto; /* Scroll vertical */
             margin-right: 10px;
+            background-color: #fff4f4;
         }
         table {
             width: 100%;
@@ -68,7 +69,7 @@
         }
         .approval-buttons .approve-deny-button {
             padding: 10px;
-            background-color: #4CAF50;
+            background-color: #961a1a;
             color: white;
             border: none;
             border-radius: 4px;
@@ -77,7 +78,7 @@
         }
         .solicitar-button{
             padding: 10px;
-            background-color: #4CAF50;
+            background-color: #911010;
             color: white;
             border: none;
             border-radius: 4px;
@@ -102,7 +103,7 @@
             display: inline-block;
             width: 100%;
             padding: 10px;
-            background-color: #4CAF50;
+            background-color:firebrick;
             color: white;
             text-align: center;
             border-radius: 4px;
@@ -130,7 +131,7 @@
         }
         .button-group button {
             padding: 10px 20px;
-            background-color: #4CAF50;
+            background-color: #ad1822;
             color: white;
             margin: 0 5px;
             border: none;
@@ -156,20 +157,32 @@
             margin-top: 20px;
         }
         .seleccionado {
-            background-color: lightblue;
+            background-color: rgba(145, 28, 17, 0.704);
         }
         #BotonOff{
             display: none;
         }
+        header{
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        #cancelarBtn{
+            margin-top: 10px;
+        }
+
     </style>
 </head>
 <body>
     <form method="post">
     <div class="container">
+        
         <div class="table-container">
             <div class="table-wrapper">
                 <table id="absence-table">
                     <colgroup>
+                        <col>
                         <col>
                         <col>
                         <col>
@@ -183,6 +196,7 @@
                             <th>N° Solicitud</th>
                             <th>Nombre solicitante</th>
                             <th>Fecha de solicitud</th>
+                            <th>Descripcion</th>
                             <th>Fecha de inicio</th>
                             <th>Fecha final</th>
                             <th>Motivo</th>
@@ -192,33 +206,43 @@
                     </thead>
                     <tbody>
                         {% for solicitud in solicitudes %}
-                        <tr name="numSolicitudSelect" id="{{ solicitud.numSolicitud }}" class="registro" onclick="seleccionarRegistro('{{ solicitud.numSolicitud }}'), MostrarBotones()">
+                        <tr id="{{ solicitud.numSolicitud }}" class="registro" data-id="{{ solicitud.numSolicitud }}" onclick="seleccionarRegistro('{{ solicitud.numSolicitud }}'), MostrarBotones()">
                             <td>{{ solicitud.numSolicitud }}</td>
                             <td>{{ solicitud.solicitante.nombre }}</td>
                             <td>{{ solicitud.fechaSolicitud }}</td>
+                            <td>{{ solicitud.ausencia.descripcion }}</td>
                             <td>{{ solicitud.ausencia.fechaInicio }}</td>
                             <td>{{ solicitud.ausencia.fechaFin }}</td>
                             <td>{{ solicitud.ausencia.motivoAusencia }}</td>
-                            <td>{{ solicitud.estadoSolicitud}}</td>
+                            <td class="estado">{{ solicitud.estadoSolicitud}}</td>
+                            <!-- <td>
+                                {% if solicitud.ausencia.comprobante %}
+                                    <a href="{% url 'ver_comprobante' solicitud.numSolicitud %}" target="_blank">Ver Comprobante</a>
+                                {% else %}
+                                    No hay comprobante
+                                {% endif %}
+                            </td> -->
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             <div class="approval-buttons">
-                <div id="BotonOff">
-                    <form action="{% url 'ausencia' registro.id %}" method="post">
-                        <button class="approve-deny-button" name="accion" type="button" value="Aprobada" onclick="seleccionarRegistro(id),OcultarBotones()">Aprobar</button>
-                    </form>
-                    <form action="{% url 'cambiar_estado' registro.id %}" method="post">
-                        <button class="approve-deny-button" name="accion" type="button" value="Denegada" onclick="seleccionarRegistro(id),OcultarBotones()">Denegar</button>
+                <div id="BotonOff" style="display: none;">
+                    {% csrf_token %}
+                    <form id="approval-form" method="post" >
+                        {% csrf_token %}
+                        <input type="hidden" id="registro_id" name="registro_id">
+                        <input type="hidden" id="accion" name="accion">
+                        <button class="approve-deny-button" id="aprobarBtn" type="button" onclick="seleccionarRegistro(id),submitApprovalForm('Aprobada')">Aprobar</button>
+                        <button class="approve-deny-button" id="denegarBtn" type="button" onclick="seleccionarRegistro(id),submitApprovalForm('Denegada')">Denegar</button>
                     </form>
                 </div>
-                <button class="solicitar-button" type="button" onclick="toggleAbsenceForm()" >Solicitar Ausencia</button>
+                <button class="solicitar-button" type="button" onclick="toggleAbsenceForm(),OcultarBotones()" >Solicitar Ausencia</button>
             </div>
         </div>
     </form>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
         <div id="Iniciar-invisible">
             {% csrf_token %}
             <div class="form-group" >
@@ -247,27 +271,57 @@
                 <label for="calendar">Día final solicitado:</label>
                 <input type="date" id="fechaFinal" value="2024-05-15" name="fechaFinal">
             </div>
-            <div class="form-group ">
-                <label for="comprobante">Agregar comprobante:</label>
+            <!-- <div class="form-group ">
+                <label for="comprobante"><i>Agregar comprobante:</i></label>
                 <div class="file-button">
-                    <input type="file" id="comprobante" class="file-input">
+                    <input type="file" id="comprobante" name="comprobante" accept="image/*" class="file-input" onchange="previewFile()">
                     <label for="comprobante" class="texto-boton-comprobante"><i>Archivo</i></label>
                 </div>
             </div>
+            <div id="preview" class="preview-container" style="display: none;">
+                <label>Vista previa:</label>
+                <img id="preview-image" src="#" alt="Vista previa" style="max-width: 100%; max-height: 200px;">
+            </div> -->
             <div class="button-group">
-                <form action="/ausencia/" method="POST">
+                <form action="/ausencia/" method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <button >Guardar</button>
+                    <button type="submit">Guardar</button>
                 </form>
-                <button>Cancelar</button>
+                <form action="/ausencia/" method="get">
+                    <button id="cancelarBtn" class="cancelarBtn">Cancelar</button>
+                </form>
             </div>
         </div>
         </form> 
     </div>
-    <script>
-            document.querySelector('.file-label').addEventListener('click', function() {
-            document.querySelector('.file-input').click();
+</body>
+</html>
+<script>
+    
+    
+        const aprobarBtn=document.getElementById('aprobarBtn');
+        const denegarBtn=document.getElementById('denegarBtn');
+        const table = document.getElementById('absence-table');
+        
+    
+        let selectedRow = null;
+
+        table.addEventListener('click', function(event) {
+            if (event.target.tagName === 'TD') {
+                if (selectedRow) {
+                    selectedRow.classList.remove('selected');
+                }
+                selectedRow = event.target.parentElement;
+                selectedRow.classList.add('selected');
+
+                const registroId = selectedRow.getAttribute('data-id');
+                
+
+                aprobarBtn.dataset.id = registroId;
+                denegarBtn.dataset.id = registroId;
+            }
         });
+
 
         function toggleAbsenceForm() {
             var form = document.getElementById('Iniciar-invisible');
@@ -288,6 +342,7 @@
             // Seleccionar el registro clickeado
             var registroSeleccionado = document.getElementById(id);
             registroSeleccionado.classList.add('seleccionado');
+            document.getElementById('registro_id').value = id;
         }
 
         function MostrarBotones() {
@@ -300,14 +355,59 @@
         }
 
         function OcultarBotones() {
-                var botones = document.getElementById('BotonOff');
-                if (botones.style.display === 'block'){
-                    botones.style.display = 'none';
-                } else {
-                    botones.style.display = 'none';
-                }
+            
         }
 
-    </script>
-</body>
-</html>
+        function submitApprovalForm(accion) {
+            const registroId = aprobarBtn.dataset.id;
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            var formData = new FormData();
+            formData.append('registro_id', registroId);
+            formData.append('accion', accion);
+
+            fetch("{% url 'cambiar_estado' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const registroSeleccionado = document.querySelector(`tr[data-id='${registroId}'] .estado`);
+                    registroSeleccionado.textContent = data.new_state;
+                    alert('Estado actualizado con éxito');
+                } else {
+                    alert('Error al actualizar el estado');
+                }
+                document.getElementById('BotonOff').style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar el estado');
+            });
+        }
+
+        function previewFile() {
+        var preview = document.getElementById('preview');
+        var fileInput = document.getElementById('comprobante');
+        var file = fileInput.files[0];
+        var previewImage = document.getElementById('preview-image');
+
+        if (file) {
+            var reader = new FileReader();
+
+            reader.onloadend = function() {
+                preview.style.display = 'block';
+                previewImage.src = reader.result;
+            }
+
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+            previewImage.src = '#';
+        }
+    }
+</script>

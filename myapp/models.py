@@ -24,17 +24,13 @@ class Ausencia(models.Model):
     descripcion = models.TextField()
     fechaInicio = models.DateField()
     fechaFin = models.DateField()
-
+    comprobante = models.ImageField(upload_to='comprobantes/', null=True, blank=True)
 
 class Solicitud(models.Model):
-    ESTADOS = [
-        ('pendiente', 'Pendiente'),
-        ('aprobada', 'Aprobada'),
-        ('denegada', 'Denegada'),
-    ]
+   
     numSolicitud = models.IntegerField()
     fechaSolicitud = models.DateField(auto_now_add=True)
-    estadoSolicitud = models.CharField(max_length=9,choices=ESTADOS, default='revision')
+    estadoSolicitud = models.CharField(max_length=20, default='revision')
     solicitante = models.ForeignKey(Empleado,on_delete=models.CASCADE)
     ausencia = models.ForeignKey(Ausencia, on_delete=models.CASCADE)
 

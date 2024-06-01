@@ -13,14 +13,26 @@ Class-based views
 Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-    HEY MAJEEEE
+    
 """
 from django.contrib import admin
 from django.urls import path
-from myapp.views import crearAusencia,cambiar_estado
+from myapp.views import iniciarSesion, cerrarSesion, ingresarEmpleado, gestionarEmpleado, actualizarEmpleado, eliminarEmpleado
+from myapp.views import crearAusencia,cambiar_estado,crearReporte,eliminarReporte
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', iniciarSesion, name='iniciar_sesion'),
+    path('cerrar_sesion/', cerrarSesion, name='cerrar_sesion'),
+    path('gestionar_empleado/', gestionarEmpleado, name='gestionar_empleado'),
+    path('gestionar_empleado/ingresar_empleado/', ingresarEmpleado, name='ingresar_empleado'),
+    path('gestionar_empleado/actualizar_empleado/<empleadoId>', actualizarEmpleado, name='actualizar_empleado'),
+    path('gestionar_empleado/eliminar_empleado/<empleadoId>', eliminarEmpleado, name="eliminar_empleado"),
     path('ausencia/', crearAusencia),
-    path('ausencia/aprobarDenegar/', cambiar_estado),
+    path('cambiar_estado/', cambiar_estado,name='cambiar_estado'),
+    path('reportes/',crearReporte),
+    path('reportes/eliminar_reporte/<int:reporte_id>/',eliminarReporte, name='eliminar_reporte'),
+    
 ]
