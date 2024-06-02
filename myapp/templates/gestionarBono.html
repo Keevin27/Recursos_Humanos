@@ -11,12 +11,17 @@
 </head>
 <body>
     <header>
-        <h1>Gestión de Bonos</h1>
+        <h1>{% if user.is_superuser %}Gestión de Bonos{% else %}Bonos asignados{% endif %}</h1>
     </header>
     <main>
         
         <section class="asignar-bono">
+            {% if user.is_superuser %}
             <button onclick="redirectTo('/gestionar_empleado/')"><i class="fas fa-arrow-left"></i> Gestionar empleado</button>
+            {% else %}
+            <button>Regresar al expediente</button>
+            {% endif %}
+            {% if user.is_superuser %}
             <div class="container">
                 <h2>Asignar Bono</h2>
                 <form id="redirect-form" method="POST">
@@ -37,6 +42,7 @@
                     <button id="cancelar" class="btn btn-primary cancel-btn">Cancelar</button>
                 </form>
             </div>   
+            {% endif %}
         </section>
         <section>
             <div class="container2">
@@ -45,14 +51,17 @@
                     <thead>
                         <tr>
                             <th>Código</th>
+                            {% if user.is_superuser %}
                             <th>Cargo</th>
                             <th>Nombre</th>
+                            {% endif %}
                             <th>Bono</th>
                             <th>Justificación</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for bono in bonos %}
+                        {% if user.is_superuser %}
                         <tr>
                             <td>{{ bono.codigo }}</td>
                             <td>{{ bono.empleado.area }}</td>
@@ -68,6 +77,13 @@
                                 </form>
                             </td>
                         </tr>
+                        {% else %}
+                        <tr>
+                            <td>{{ bono.codigo }}</td>
+                            <td>{{ bono.monto }}</td>
+                            <td>{{ bono.justificacion }}</td>
+                        </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>

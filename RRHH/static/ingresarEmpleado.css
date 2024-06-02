@@ -23,7 +23,9 @@ form {
     display: flex;
     flex-direction: column;
 }
-
+.invalid {
+    border: 2px solid red; /* Cambia el borde a rojo */
+  }
 .row {
     display: flex;
     flex-wrap: wrap;

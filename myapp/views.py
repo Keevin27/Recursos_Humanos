@@ -6,8 +6,10 @@ from datetime import datetime, date
 from .models import Empleado, Bono
 import random, string
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 # Create your views here.
+@login_required
 def gestionarEmpleado(request):
     empleados = Empleado.objects.all()
     for empleado in empleados:
@@ -18,6 +20,8 @@ def calcularEdad(fechaNacimiento):
     hoy = date.today()
     return hoy.year - fechaNacimiento.year - ((hoy.month, hoy.day) < (fechaNacimiento.month, fechaNacimiento.day))
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def eliminarEmpleado(request, empleadoId):
     empleado = get_object_or_404(Empleado, pk=empleadoId)
     usuario = empleado.user
@@ -25,8 +29,11 @@ def eliminarEmpleado(request, empleadoId):
     usuario.delete()
     return redirect('gestionar_empleado')
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def actualizarEmpleado(request, empleadoId):
     empleado = get_object_or_404(Empleado, pk=empleadoId)
+    nacionalidad=empleado.nacionalidad
     if request.method == 'POST':
         try:
             empleado.nombre = request.POST['nombre']
@@ -36,35 +43,41 @@ def actualizarEmpleado(request, empleadoId):
             empleado.sueldo = request.POST['sueldo']
             empleado.direccion = request.POST['direccion']
             empleado.nacionalidad = request.POST['nacionalidad']
+            empleado.dui = request.POST['dui']
             empleado.save()
             return redirect('gestionar_empleado')
         except ValueError:
             return render(request, 'ingresarEmpleado.html', {'empleado':empleado, 'error': "Error al actualizar los datos", 'es_creacion':False})
-    return render(request, 'ingresarEmpleado.html', {'empleado': empleado, 'es_creacion':False})
+    return render(request, 'ingresarEmpleado.html', {'empleado': empleado, 'es_creacion':False, 'nacionalidad':nacionalidad})
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def ingresarEmpleado(request):
     if request.method == 'GET':
         return render(request, 'ingresarEmpleado.html', {'es_creacion':True})
     else:
-        nombre = request.POST['nombre']
-        apellido = request.POST['apellido']
-        area = request.POST['area']
-        telefono = request.POST['telefono']
-        fechaNac = request.POST['fechaNacimiento']
-        duui = request.POST['dui']
-        gradoAcad = request.POST['gradoAcademico']
-        sueldo = request.POST['sueldo']
-        direccion = request.POST['direccion']
-        sexo = request.POST['sexo']
-        nacionalidad = request.POST['nacionalidad']
-        codigo = generar_codigo_empleado(apellido, fechaNac)
+        try:
+            nombre = request.POST['nombre']
+            apellido = request.POST['apellido']
+            area = request.POST['area']
+            telefono = request.POST['telefono']
+            fechaNac = request.POST['fechaNacimiento']
+            duui = request.POST['dui']
+            gradoAcad = request.POST['gradoAcademico']
+            sueldo = request.POST['sueldo']
+            direccion = request.POST['direccion']
+            sexo = request.POST['sexo']
+            nacionalidad = request.POST['nacionalidad']
+            codigo = generar_codigo_empleado(apellido, fechaNac)
+            print (request.POST['nombre'])
 
-        user = User.objects.create_user(username=codigo, password=codigo+'123')
-        empleado = Empleado(codigo=codigo, nombre=nombre, apellido=apellido, area=area, telefono = telefono, fechaNacimineto =fechaNac, dui = duui, gradoAcademico=gradoAcad, sueldo =sueldo, direccion = direccion, sexo= sexo, nacionalidad = nacionalidad, user=user)
-        empleado.save()
-        user.save()
-        login(request, user)
-        return redirect('gestionar_empleado')
+            user = User.objects.create_user(username=codigo, password=codigo+'123')
+            empleado = Empleado(codigo=codigo, nombre=nombre, apellido=apellido, area=area, telefono = telefono, fechaNacimineto =fechaNac, dui = duui, gradoAcademico=gradoAcad, sueldo =sueldo, direccion = direccion, sexo= sexo, nacionalidad = nacionalidad, user=user)
+            empleado.save()
+            user.save()
+            return redirect('gestionar_empleado')
+        except:
+            return render(request, 'ingresarEmpleado.html', {'es_creacion':True, 'error': 'Datos no validos'})
 
 def generar_codigo_empleado(apellidos, fechaNacimiento):
     fecha_nac = datetime.strptime(fechaNacimiento, '%Y-%m-%d').date()
@@ -100,10 +113,12 @@ def iniciarSesion(request):
             login(request, user)
             return redirect('gestionar_empleado')
 
+@login_required
 def cerrarSesion(request):
     logout(request)
     return redirect('iniciar_sesion')
 
+@login_required
 def gestionarBono(request, empleadoId):
     bonos = Bono.objects.all()
     empleado = get_object_or_404(Empleado, pk = empleadoId)
@@ -117,6 +132,8 @@ def generate_code(length=6):
     
     return codigo
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def actualizarBono(request, empleadoId, bonoId):
     bono = get_object_or_404(Bono, pk = bonoId)
     url = reverse('gestionar_bono', args=[empleadoId])
@@ -130,6 +147,8 @@ def actualizarBono(request, empleadoId, bonoId):
             return redirect(url)
     return redirect(url)
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def crearBono(request, empleadoId):
     if request.method == 'GET':
         return redirect('gestionar_bono/{empleadoId}')
@@ -145,9 +164,17 @@ def crearBono(request, empleadoId):
         except:
             return redirect('/gestionar_bono/'+empleadoId)
 
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def eliminarBono(request, empleadoId, bonoId):
     bono = get_object_or_404(Bono, pk = bonoId)
     url = reverse('gestionar_bono', args=[empleadoId])
     if request.method == 'POST':
         bono.delete()
     return redirect(url)
+
+def error_404_view(request, exception):
+    return render(request, '404.html', status=404)
+
+def error_500_view(request):
+    return render(request, '500.html', status=500)

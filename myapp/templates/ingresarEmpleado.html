@@ -11,7 +11,8 @@
 <body>
     <div class="container">
         <h1>{% if es_creacion %}Ingresar Empleado{% else %}Actualizar Empleado{% endif %}</h1>
-        <form method = "POST">
+        {{error}}
+        <form id="formulario" method = "POST">
             {% csrf_token %}
             <div class="row">
                 <div class="col">
@@ -44,7 +45,14 @@
                 </div>
                 <div class="col">
                     <label for="nacionalidad">Nacionalidad:</label>
-                    <input type="text" id="nacionalidad" name="nacionalidad" required value="{% if not es_creacion %}{{ empleado.nacionalidad }}{% endif %}">
+                    <select id="nacionalidad" name="nacionalidad" required>
+                        <option value="">Seleccione una nacionalidad...</option>
+                        <option value="El Salvador" {% if not es_creacion %}{% if nacionalidad == "El Salvador" %}selected{% endif %}{% endif %}>El Salvador</option>
+                        <option value="Guatemala" {% if not es_creacion %}{% if nacionalidad == "Guatemala" %}selected{% endif %}{% endif %}>Guatemala</option>
+                        <option value="Honduras" {% if not es_creacion %}{% if nacionalidad == "Honduras" %}selected{% endif %}{% endif %}>Hunduras</option>
+                        <option value="Costa Rica" {% if not es_creacion %}{% if nacionalidad == "Costa Rica" %}selected{% endif %}{% endif %}>Costa Rica</option>
+                        <option value="Otros" {% if not es_creacion %}{% if nacionalidad == "Otros" %}selected{% endif %}{% endif %}>Otros</option>
+                    </select>
                 </div>
             </div>
             <div class="row">
@@ -60,7 +68,7 @@
             <div class="row">
                 <div class="col">
                     <label for="dui">DUI:</label>
-                    <input type="text" id="dui" name="dui" {% if not es_creacion %}value="{{ empleado.dui }}" disabled{% endif %}>
+                    <input type="text" id="dui" name="dui" disabled {% if not es_creacion %}value="{{ empleado.dui }}"{% endif %}>
                 </div>
                 <div class="col">
 
@@ -103,4 +111,109 @@
             window.location.href = "{% url 'gestionar_empleado' %}";
         }
     }
+    document.getElementById('nacionalidad').addEventListener('change', function() {
+        var nacionalidad = this.value;
+        var duiInput = document.getElementById('dui');
+
+        if (nacionalidad === 'El Salvador') {
+            duiInput.disabled = false; // Habilitar el campo DUI
+        } else {
+            duiInput.disabled = true; // Deshabilitar el campo DUI
+            duiInput.value = '00000000-0'; // Limpiar el valor del campo DUI si está deshabilitado
+        }
+    });
+
+
+    document.getElementById('formulario').addEventListener('submit', function(event) {
+        let fechaNacInput = document.getElementById('fechaNacimiento').value;
+        let fechaNac = new Date(fechaNacInput);
+        let today = new Date();
+        today.setHours(0, 0, 0, 0); // Ajustar la fecha de hoy para no considerar la hora
+
+        var telefonoInput = document.getElementById('telefono');
+        var valorTel = telefonoInput.value.replace(/\D/g, '');
+
+        var duiInput = document.getElementById('dui');
+        var valorDui = duiInput.value.replace(/\D/g, '');
+
+        var selectElement = document.getElementById('nacionalidad');
+        var selectedValue = selectElement.value;
+
+        let minAge = 18;
+        let maxAge = 60;
+
+        duiInput.disabled = false;
+
+        // Calcular la fecha mínima y máxima permitida
+        let minDate = new Date(today.getFullYear() - maxAge, today.getMonth(), today.getDate());
+        let maxDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
+
+        if (fechaNac > maxDate) {
+            alert('La fecha de nacimiento indica que la persona es menor de 18 años.');
+            event.preventDefault();
+        } else if (fechaNac < minDate) {
+            alert('La fecha de nacimiento indica que la persona es mayor de 60 años.');
+            event.preventDefault();
+        } else if(valorTel.length !== 8) {
+            event.preventDefault(); // Evita que el formulario se envíe
+            alert('Por favor, ingresa un número de teléfono válido en formato 0000-0000.');
+        } else if(selectedValue === "El Salvador" && valorDui.length !== 9) {
+            event.preventDefault(); // Evita que el formulario se envíe
+            alert('Por favor, ingresa un número de dui válido en formato 00000000-0.');
+        }
+
+        });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var telefonoInput = document.getElementById('telefono');
+        var duiInput = document.getElementById('dui');
+
+        function aplicarMascaraDui() {
+            var valor = duiInput.value.replace(/\D/g, '');
+            var longitud = valor.length;
+
+            if (longitud < 8) {
+            duiInput.classList.add('invalid'); // Agrega clase si no se cumplen los requisitos
+            duiInput.value = valor;
+            } else if (longitud === 8) {
+            duiInput.classList.add('invalid'); // Agrega clase si no se cumplen los requisitos
+            duiInput.value = valor + '-';
+            } else if (longitud > 8 && longitud <= 9) {
+            duiInput.classList.remove('invalid'); // Quita clase si se cumple el formato
+            duiInput.value = valor.slice(0, 8) + '-' + valor.slice(8);
+            } else if (longitud > 9) {
+            duiInput.classList.remove('invalid'); // Quita clase si se cumple el formato
+            duiInput.value = valor.slice(0, 8) + '-' + valor.slice(8, 9);
+            }
+        }
+        // Función para aplicar la máscara y validar el formato
+        function aplicarMascaraTelefono() {
+            var valor = telefonoInput.value.replace(/\D/g, '');
+            var longitud = valor.length;
+
+            if (longitud < 4) {
+            telefonoInput.classList.add('invalid'); // Agrega clase si no se cumplen los requisitos
+            telefonoInput.value = valor;
+            } else if (longitud === 4) {
+            telefonoInput.classList.add('invalid'); // Agrega clase si no se cumplen los requisitos
+            telefonoInput.value = valor + '-';
+            } else if (longitud > 4 && longitud <= 8) {
+            telefonoInput.classList.remove('invalid'); // Quita clase si se cumple el formato
+            telefonoInput.value = valor.slice(0, 4) + '-' + valor.slice(4);
+            } else if (longitud > 8) {
+            telefonoInput.classList.remove('invalid'); // Quita clase si se cumple el formato
+            telefonoInput.value = valor.slice(0, 4) + '-' + valor.slice(4, 8);
+            }
+        }
+        // Event listeners para aplicar la máscara y validar el formato cuando se ingresa o cambia el valor
+        telefonoInput.addEventListener('input', aplicarMascaraTelefono);
+        telefonoInput.addEventListener('change', aplicarMascaraTelefono);
+
+        // Verificar en el inicio si el valor cumple con el formato
+        aplicarMascaraTelefono();
+        
+        duiInput.addEventListener('input', aplicarMascaraDui);
+        duiInput.addEventListener('change', aplicarMascaraDui);
+        aplicarMascaraDui();
+    });
 </script>
