@@ -171,10 +171,22 @@
         #cancelarBtn{
             margin-top: 10px;
         }
+        #regresarBtn {
+            position: absolute;
+            top: 20px; /* Ajusta este valor según lo necesites */
+            left: 20px; /* Ajusta este valor según lo necesites */
+            z-index: 1000; /* Asegura que el botón esté encima de otros elementos */
+            background-color: #b11c19;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
 
     </style>
 </head>
 <body>
+    <button id="regresarBtn" onclick="redirectTo('/gestionar_empleado/')"><i class="fas fa-arrow-left"></i>Regresar</button>
     <form method="post">
     <div class="container">
         
@@ -234,11 +246,15 @@
                         {% csrf_token %}
                         <input type="hidden" id="registro_id" name="registro_id">
                         <input type="hidden" id="accion" name="accion">
-                        <button class="approve-deny-button" id="aprobarBtn" type="button" onclick="seleccionarRegistro(id),submitApprovalForm('Aprobada')">Aprobar</button>
-                        <button class="approve-deny-button" id="denegarBtn" type="button" onclick="seleccionarRegistro(id),submitApprovalForm('Denegada')">Denegar</button>
+                        {% if usuario.is_superuser %}
+                            <button class="approve-deny-button" id="aprobarBtn" type="button" onclick="seleccionarRegistro(id),submitApprovalForm('Aprobada')">Aprobar</button>
+                            <button class="approve-deny-button" id="denegarBtn" type="button" onclick="seleccionarRegistro(id),submitApprovalForm('Denegada')">Denegar</button>
+                        {% endif %}
                     </form>
                 </div>
-                <button class="solicitar-button" type="button" onclick="toggleAbsenceForm(),OcultarBotones()" >Solicitar Ausencia</button>
+                {% if not usuario.is_superuser %}
+                    <button class="solicitar-button" type="button" onclick="toggleAbsenceForm(),OcultarBotones()" >Solicitar Ausencia</button>
+                {% endif %}
             </div>
         </div>
     </form>
@@ -409,5 +425,8 @@
             preview.style.display = 'none';
             previewImage.src = '#';
         }
-    }
+        }
+        function redirectTo(url){
+            window.location.href=url;
+        }
 </script>

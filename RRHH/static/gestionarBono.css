@@ -1,0 +1,94 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #dcd9d9;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+}
+#crear{
+    display: block;
+}
+#actualizar{
+    display:none;
+}
+#cancelar, #eliminar{
+    display:none;
+}
+.container{
+    min-width: 300px;
+    max-width: 400px;
+    max-height: 500px;
+    min-height: 400px;
+}
+h1 {
+    margin: 0;
+}
+.asignar-bono{
+    margin-bottom: 20px;
+}
+div {
+    text-align: left;
+}
+th, td {
+    border: 1px solid #1d0e0e;
+    padding: 8px;
+}
+.container2{
+    float: left;
+    margin-right: 100px; 
+    background-color: rgb(243, 231, 230);
+    border: 1px solid #000;
+    width: 70%;
+    height: 400px; 
+    border:1px solid #000;
+    overflow-y: auto;
+}
+
+#justificacion{
+    width: 300px;   /* Fija el ancho del textarea */
+    height: 150px;  /* Fija la altura del textarea */
+    resize: none;   /* Impide que el usuario redimensione el textarea */
+    box-sizing: border-box;
+}
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+input[type="text"],
+input[type="number"],
+input[type="tel"],
+select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+}
+table {
+    width: 100%;
+    max-height: 300px;
+    overflow-y: scroll;
+    border-collapse: collapse;
+}
+button {
+    background-color: #b11c19;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+}
+main {
+    padding: 20px;
+}
+
+section {
+    margin-bottom: 20px;
+}
+#ide{
+    display: none;
+}

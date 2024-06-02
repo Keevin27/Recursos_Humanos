@@ -9,29 +9,20 @@
     <link rel="stylesheet" type ="text/css" href='{% static "gestionarEmpleado.css" %}'>
     <style>
         .selected {
-            background-color: #d3d3d3;
+            background-color: #ed7171;
         }
         .disabled {
             pointer-events: none;
             opacity: 0.5;
         }
-    </style>
-    <script>
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
+        header {
+            background-color: #525f6e;
+            color: #ece9e9;
+            text-align: center;
+            padding: 10px;
         }
-    </script>
+    </style>
+    
 </head>
 <body>
     <header>
@@ -69,15 +60,22 @@
                 </div>
                 <div class="caja-float caja-ancho2">
                     <ul>
-                        <button id="editar-btn" class="disabled">Editar</button>
-                        <button id="eliminar-btn" class="disabled">Eliminar</button>
-                        <li>Gestionar bonos</li>
-                        <li>Gestionar ausencia</li>
-                        <li>Gestionar reportes</li>
-                        <li>Gestionar planilla</li>
-                        <li>Administrar expediente</li>
+                        <div class="div1"><button id="bonificar-btn" class="disabled">Asignar bono</button></div>
+                        <br>
+                        <div class="div1"><button id="editar-btn" class="disabled">Editar empleado</button></div>
+                        <br>
+                        <div class="div1"><button id="eliminar-btn" class="disabled">Eliminar empleado</button></div>
+                        <br>
+                        <div class="div1"><button id="reportar-btn" class="disabled">Asignar reporte</button></div>
+                        <br>
+                        <div class="div1"><button id="administrar-exp-btn" class="disabled">Administrar expediente</button></div>
+                        <br>
+                        <div class="div1"><button id="ingresar-empleado-btn">Ingresar Empleado</button></div>
+                        <br>
+                        <div class="div1"><button id="gestionar-ausencia-btn">Gestionar ausencias</button></div>
+                        <br>
+                        <div class="div1"><button id="gestionar-planilla-btn">Gestionar planilla</button></div>
                     </ul>
-                    <button id="nueva-url-btn">Ingresar Empleado</button>
                 </div>
             </div>
         </section>
@@ -94,7 +92,12 @@
         const table = document.getElementById('registros-table');
         const editarBtn = document.getElementById('editar-btn');
         const eliminarBtn = document.getElementById('eliminar-btn');
-        const nuevaUrlBtn = document.getElementById('nueva-url-btn');
+        const ingresarBtn = document.getElementById('ingresar-empleado-btn');
+        const bonificarBtn = document.getElementById('bonificar-btn');
+        const reportarBtn = document.getElementById('reportar-btn');
+        const adminExpeBtn = document.getElementById('administrar-exp-btn');
+        const ausenciaBtn = document.getElementById('gestionar-ausencia-btn');
+        const planillaBtn = document.getElementById('gestionar-planilla-btn');
 
         let selectedRow = null;
 
@@ -108,10 +111,16 @@
 
                 editarBtn.classList.remove('disabled');
                 eliminarBtn.classList.remove('disabled');
+                reportarBtn.classList.remove('disabled');
+                bonificarBtn.classList.remove('disabled');
+                adminExpeBtn.classList.remove('disabled');
 
                 const registroId = selectedRow.getAttribute('data-id');
                 editarBtn.dataset.id = registroId;
                 eliminarBtn.dataset.id = registroId;
+                reportarBtn.dataset.id = registroId;
+                bonificarBtn.dataset.id = registroId;
+                adminExpeBtn.dataset.id = registroId;
             }
         });
 
@@ -121,7 +130,24 @@
                 window.location.href = `/gestionar_empleado/actualizar_empleado/${id}`;
             }
         });
-
+        reportarBtn.addEventListener('click', function() {
+            if (!this.classList.contains('disabled')) {
+                const id = this.dataset.id;
+                window.location.href = `/reportes/${id}`;
+            }
+        });
+        bonificarBtn.addEventListener('click', function() {
+            if (!this.classList.contains('disabled')) {
+                const id = this.dataset.id;
+                window.location.href = `/gestionar_bono/${id}`;
+            }
+        });
+        adminExpeBtn.addEventListener('click', function() {
+            if (!this.classList.contains('disabled')) {
+                const id = this.dataset.id;
+                window.location.href = `/gestionar_empleado/actualizar_empleado/${id}`;
+            }
+        });
         eliminarBtn.addEventListener('click', function() {
             if (!this.classList.contains('disabled')) {
                 const id = this.dataset.id;
@@ -131,8 +157,14 @@
                 }
             }
         });
-        nuevaUrlBtn.addEventListener('click', function() {
+        ingresarBtn.addEventListener('click', function() {
                 window.location.href = '/gestionar_empleado/ingresar_empleado';
+            });
+        ausenciaBtn.addEventListener('click', function() {
+                window.location.href = '/ausencia/';
+            });
+        planillaBtn.addEventListener('click', function() {
+                window.location.href = '/gestionar_empleado/';
             });
     });
 </script>

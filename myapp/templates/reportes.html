@@ -120,11 +120,23 @@
             color: white;
             margin-top: 10px;
         }
+        #regresarBtn {
+            position: absolute;
+            top: 20px; /* Ajusta este valor según lo necesites */
+            left: 20px; /* Ajusta este valor según lo necesites */
+            z-index: 1000; /* Asegura que el botón esté encima de otros elementos */
+            background-color: #b11c19;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
         </style>
 </head>
 <body>
+    <button id="regresarBtn" onclick="redirectTo('/gestionar_empleado/')"><i class="fas fa-arrow-left"></i>Regresar</button>
     <form method="post">
-        <div class="container">
+        <div class="container"> 
             <div class="listaReportes">
                 <table id="tablaReportes">
                     <thead>
@@ -145,10 +157,12 @@
                     </tbody>
                 </table>
             </div>
+            {% if usuario.is_superuser %}
             <div class="nuevoRep">
                 <button class="nuevoRep" type="button" onclick="mostrarCampos(),ocultarBoton()">Nuevo Reporte</button>
                 <button id="eliminarBtn" type="button" onclick="eliminarRegistro()">Eliminar reporte</button>
             </div>
+            {% endif %}
             <div class="form-reporte">
                 {% csrf_token %}
                 
@@ -158,11 +172,11 @@
                         <textarea id="descripcion" name="descripcion" rows="4" placeholder="Descripcion del reporte"></textarea>
                     </div>
                     <div class="botones">
-                        <form  action="/reportes/" method="post">
+                        <form action="/reportes/{{ empleado.id }} " method="post">
                             {% csrf_token %}
-                            <button class="agregarBtn" type="button">Añadir reporte</button>
+                            <button class="agregarBtn">Añadir reporte</button>
                         </form>
-                        <form action="/reportes/" method="get">
+                        <form action="/reportes/{{ empleado.id }} " method="get">
                             <button class="cancelarBtn">Cancelar reporte</button>
                         </form>
                     </div>
@@ -190,12 +204,16 @@
             // Mostrar botón de eliminar
             var eliminarBtn = document.getElementById('eliminarBtn');
             var campos = document.getElementById('Iniciar-invisible');
+
+
             if (campos.style.display=='block'){
                 eliminarBtn.style.display = 'none';
             } else{
                 eliminarBtn.style.display = 'block';
             }
         }
+
+
 
     function mostrarCampos(){
         var form = document.getElementById('Iniciar-invisible');
@@ -255,5 +273,7 @@
                 alert('Seleccione un registro para eliminar');
             }
     }
-    
+    function redirectTo(url){
+        window.location.href=url;
+    }
 </script>

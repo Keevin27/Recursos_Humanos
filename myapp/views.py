@@ -13,17 +13,27 @@ from .models import Ausencia,Empleado,Reporte
 from django.contrib.auth.models import User
 from datetime import date
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 
 
+from .models import Empleado, Bono
+import random, string
+from django.urls import reverse
 
 # Create your views here.
 
-def crearReporte(request):
-    reportes = Reporte.objects.all()
+@login_required
+def crearReporte(request,empleadoId):
+    usuario=request.user
+    if usuario.is_superuser:
+        reportes = Reporte.objects.all()
+        empleado = get_object_or_404(Empleado, pk = empleadoId)
+    else:
+        empleado=Empleado.objects.get(user=usuario)
+        reportes = Reporte.objects.filter(empleado=empleado)
 
     if request.method == 'GET':
-        return render(request, 'reportes.html', {'reportes':reportes})
-    
+        return render(request,'reportes.html',{'reportes':reportes,'empleado':empleado,'usuario':usuario})
     else:
         descripcionReporte = request.POST.get('descripcion')
         if descripcionReporte == '':
@@ -31,17 +41,16 @@ def crearReporte(request):
         else:
             if Reporte.objects.exists() == False:
                 numReporte=1
-                empleado=Empleado.objects.get(id=2)
                 reporte = Reporte(numReporte=numReporte,descripcionReporte=descripcionReporte,empleado=empleado)
                 reporte.save()
             
             else:
                 num = Reporte.objects.all().order_by('numReporte').last()
                 numReporte=num.numReporte + 1
-                empleado=Empleado.objects.get(id=2)
                 reporte = Reporte(numReporte=numReporte,descripcionReporte=descripcionReporte,empleado=empleado)
                 reporte.save()
-    return redirect('/reportes/')
+
+    return redirect('/reportes/'+ empleadoId)
 
 @csrf_exempt
 def eliminarReporte(request, reporte_id):
@@ -55,12 +64,22 @@ def eliminarReporte(request, reporte_id):
     else:
         return JsonResponse({'error': 'Método no permitido'}, status=405)
 
+@login_required
 def crearAusencia(request):
-    
-    solicitudes=Solicitud.objects.all()
+    usuario = request.user
+    if usuario.is_superuser:
+        solicitudes = Solicitud.objects.all()
+    else:
+        emplea=Empleado.objects.get(user=usuario)
+        solicitudes = Solicitud.objects.filter(solicitante=emplea)
+    context = {
+        'usuario': usuario,
+        'solicitudes': solicitudes
+    }
+
     
     if request.method == 'GET':
-        return render(request, 'solicitud.html',{'solicitudes':solicitudes})
+        return render(request, 'solicitud.html',context)
     
     else:
         motivoAusencia = request.POST['motivoAusencia']
@@ -80,7 +99,7 @@ def crearAusencia(request):
                 soli=Solicitud.objects.all().order_by('numSolicitud').last()
                 numSolicitud=soli.numSolicitud+1
             
-            empleado=Empleado.objects.get(id=2)
+            empleado=Empleado.objects.get(user=usuario)
             solicitud= Solicitud(numSolicitud=numSolicitud,ausencia=ausencia,solicitante=empleado)
             solicitud.save()
 
@@ -211,3 +230,51 @@ def iniciarSesion(request):
 def cerrarSesion(request):
     logout(request)
     return redirect('iniciar_sesion')
+
+def gestionarBono(request, empleadoId):
+    bonos = Bono.objects.all()
+    empleado = get_object_or_404(Empleado, pk = empleadoId)
+    return render(request, 'gestionarBono.html', {'bonos':bonos, 'empleado':empleado})
+
+def generate_code(length=6):
+    characters = string.ascii_uppercase + string.digits
+    codigo = ''.join(random.choices(characters, k=length))
+    while Bono.objects.filter(codigo = codigo).count() > 0:
+        codigo = ''.join(random.choices(characters, k=length))
+    
+    return codigo
+
+def actualizarBono(request, empleadoId, bonoId):
+    bono = get_object_or_404(Bono, pk = bonoId)
+    url = reverse('gestionar_bono', args=[empleadoId])
+    if request.method == 'POST':
+        try:
+            bono.justificacion = request.POST['justificacion']
+            bono.monto = request.POST['montoBono']
+            bono.save()
+            return redirect(url)
+        except:
+            return redirect(url)
+    return redirect(url)
+
+def crearBono(request, empleadoId):
+    if request.method == 'GET':
+        return redirect('gestionar_bono/{empleadoId}')
+    else:
+        try:
+            empleado = get_object_or_404(Empleado, pk=empleadoId)
+            codigo = generate_code()
+            justificacion = request.POST['justificacion']
+            monto = request.POST['montoBono']
+            bono = Bono(codigo = codigo, justificacion=justificacion, monto=monto, empleado=empleado)
+            bono.save()
+            return redirect('/gestionar_bono/'+empleadoId)
+        except:
+            return redirect('/gestionar_bono/'+empleadoId)
+
+def eliminarBono(request, empleadoId, bonoId):
+    bono = get_object_or_404(Bono, pk = bonoId)
+    url = reverse('gestionar_bono', args=[empleadoId])
+    if request.method == 'POST':
+        bono.delete()
+    return redirect(url)

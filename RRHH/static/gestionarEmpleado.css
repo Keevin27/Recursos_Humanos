@@ -3,7 +3,7 @@ body {
 }
 
 header {
-    background-color: #007bff;
+    background-color: #e5e9ed;
     color: #fff;
     text-align: center;
     padding: 10px;
@@ -12,18 +12,22 @@ header {
 main {
     padding: 20px;
 }
-
+.div1 {
+    text-align: center;
+}
 .tabla-empleados {
     margin-bottom: 20px;
 }
 
 table {
     width: 100%;
+    max-height: 300px;
+    overflow-y: scroll;
     border-collapse: collapse;
 }
 
 th, td {
-    border: 1px solid #ddd;
+    border: 1px solid #655f5f;
     padding: 8px;
 }
 
@@ -52,7 +56,7 @@ select {
 }
 
 button {
-    background-color: #007bff;
+    background-color: #b11c19;
     color: #fff;
     padding: 10px 20px;
     border: none;
@@ -65,13 +69,15 @@ button {
 .caja-float {
     float: left;
     margin-right: 10px; 
-    background-color: lightblue;
+    background-color: rgb(243, 231, 230);
     border: 1px solid #000;
 }
 
 .caja-ancho1 {
-    width: 70%; 
+    width: 70%;
+    height: 600px; 
+    overflow-y: auto;
 }
 .caja-ancho-2 {
-    width: 35%; 
+    width: 35%;
 }

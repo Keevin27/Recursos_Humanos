@@ -17,7 +17,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from myapp.views import iniciarSesion, cerrarSesion, ingresarEmpleado, gestionarEmpleado, actualizarEmpleado, eliminarEmpleado
+from myapp.views import iniciarSesion, cerrarSesion, ingresarEmpleado, gestionarEmpleado, actualizarEmpleado, eliminarEmpleado, gestionarBono, crearBono, actualizarBono, eliminarBono
 from myapp.views import crearAusencia,cambiar_estado,crearReporte,eliminarReporte
 from django.conf import settings
 from django.conf.urls.static import static
@@ -30,9 +30,14 @@ urlpatterns = [
     path('gestionar_empleado/ingresar_empleado/', ingresarEmpleado, name='ingresar_empleado'),
     path('gestionar_empleado/actualizar_empleado/<empleadoId>', actualizarEmpleado, name='actualizar_empleado'),
     path('gestionar_empleado/eliminar_empleado/<empleadoId>', eliminarEmpleado, name="eliminar_empleado"),
+    path('gestionar_bono/<empleadoId>', gestionarBono, name='gestionar_bono'),
+    path('gestionar_bono/crear/<empleadoId>', crearBono, name='crear_bono'),
+    path('gestionar_bono/actualizar/<empleadoId>/<bonoId>', actualizarBono, name='actualizar_bono'),
+    path('gestionar_bono/eliminar/<empleadoId>/<bonoId>', eliminarBono, name='eliminar_bono'),
+    path('gestionar_empleado/eliminar_empleado/<empleadoId>', eliminarEmpleado, name="eliminar_empleado"),
     path('ausencia/', crearAusencia),
     path('cambiar_estado/', cambiar_estado,name='cambiar_estado'),
-    path('reportes/',crearReporte),
+    path('reportes/<empleadoId>/',crearReporte, name='crearReporte'),
     path('reportes/eliminar_reporte/<int:reporte_id>/',eliminarReporte, name='eliminar_reporte'),
     
 ]
