@@ -18,7 +18,9 @@ main {
 .tabla-empleados {
     margin-bottom: 20px;
 }
-
+#eliminar{
+    display: none;
+}
 table {
     width: 100%;
     max-height: 300px;

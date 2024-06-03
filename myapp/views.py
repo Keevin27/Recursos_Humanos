@@ -151,8 +151,8 @@ def calcularEdad(fechaNacimiento):
 def eliminarEmpleado(request, empleadoId):
     empleado = get_object_or_404(Empleado, pk=empleadoId)
     usuario = empleado.user
-
-    usuario.delete()
+    if request.method == 'POST':
+        usuario.delete()
     return redirect('gestionar_empleado')
 
 @login_required

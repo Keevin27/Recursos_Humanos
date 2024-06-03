@@ -69,6 +69,10 @@
                         <br>
                         <div class="div1"><button id="eliminar-btn" class="disabled">Eliminar empleado</button></div>
                         <br>
+                        <form id="eliminar-form" method="POST">
+                            {% csrf_token %}
+                            <button id="eliminar">Eliminar</button>
+                        </form>
                         <div class="div1"><button id="reportar-btn" class="disabled">Asignar reporte</button></div>
                         <br>
                         <div class="div1"><button id="administrar-exp-btn" class="disabled">Administrar expediente</button></div>
@@ -156,7 +160,9 @@
                 const id = this.dataset.id;
                 const confirmation = confirm('¿Estás seguro de que deseas eliminar este empleado?');
                 if (confirmation) {
-                    window.location.href = `/gestionar_empleado/eliminar_empleado/${id}`;  
+                    var url = '/gestionar_empleado/eliminar_empleado/'+id;
+                    document.getElementById('eliminar-form').action = url;  
+                    document.getElementById('eliminar-form').submit();
                 }
             }
         });
