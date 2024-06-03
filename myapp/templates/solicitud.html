@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud de Ausencia</title>
+    <style>
+        body {
+            
+            font-family: Arial, sans-serif;
+            background-color: #5c5c5c;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            width: 1300px;
+        }
+        .header {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .header .top-button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .table-container {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+        .table-wrapper {
+            width: 90%;
+            height: 250px; /* Altura fija para 3 registros */
+            overflow-y: auto; /* Scroll vertical */
+            margin-right: 10px;
+            background-color: #fff4f4;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        colgroup col {
+            width: 14.28%;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        .approval-buttons {
+            display: flex;
+            flex-direction: column;
+        }
+        .approval-buttons .approve-deny-button {
+            padding: 10px;
+            background-color: #961a1a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .solicitar-button{
+            padding: 10px;
+            background-color: #911010;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            
+        }
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+            top: 20px;
+        }
+        .file-input{
+            display: none;
+        }
+        .file-button {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+        }
+        .texto-boton-comprobante{
+            display: inline-block;
+            width: 100%;
+            padding: 10px;
+            background-color:firebrick;
+            color: white;
+            text-align: center;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .texto-boton-comprobante i{
+            margin-right: 5px;
+        }
+        input[type="file" ]{
+            margin-bottom: 15px;
+            
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        select, textarea{
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .button-group {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .button-group button {
+            padding: 10px 20px;
+            background-color: #ad1822;
+            color: white;
+            margin: 0 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .calendar-container {
+            display: inline-block;
+            width: 50%;
+            position: relative;
+            top: 20px;
+        }
+        .description-container {
+            display: inline-block;
+            width: 45%;
+            vertical-align: top;
+            position: relative;
+            top: 20px;
+        }
+        #Iniciar-invisible{
+            display: none; /* Ocultar inicialmente */
+            margin-top: 20px;
+        }
+        .seleccionado {
+            background-color: rgba(145, 28, 17, 0.704);
+        }
+        #BotonOff{
+            display: none;
+        }
+        header{
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        #cancelarBtn{
+            margin-top: 10px;
+        }
+        #regresarBtn {
+            position: absolute;
+            top: 20px; /* Ajusta este valor según lo necesites */
+            left: 20px; /* Ajusta este valor según lo necesites */
+            z-index: 1000; /* Asegura que el botón esté encima de otros elementos */
+            background-color: #b11c19;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+    <button id="regresarBtn" onclick="redirectTo('/gestionar_empleado/')"><i class="fas fa-arrow-left"></i>Regresar</button>
+    <form method="post">
+    <div class="container">
+        
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table id="absence-table">
+                    <colgroup>
+                        <col>
+                        <col>
+                        <col>
+                        <col>
+                        <col>
+                        <col>
+                        <col>
+                        <col>
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>N° Solicitud</th>
+                            <th>Nombre solicitante</th>
+                            <th>Fecha de solicitud</th>
+                            <th>Descripcion</th>
+                            <th>Fecha de inicio</th>
+                            <th>Fecha final</th>
+                            <th>Motivo</th>
+                            <th>Estado de solicitud</th>
+                        </tr>
+
+                    </thead>
+                    <tbody>
+                        {% for solicitud in solicitudes %}
+                        <tr id="{{ solicitud.numSolicitud }}" class="registro" data-id="{{ solicitud.numSolicitud }}" onclick="seleccionarRegistro('{{ solicitud.numSolicitud }}'), MostrarBotones()">
+                            <td>{{ solicitud.numSolicitud }}</td>
+                            <td>{{ solicitud.solicitante.nombre }}</td>
+                            <td>{{ solicitud.fechaSolicitud }}</td>
+                            <td>{{ solicitud.ausencia.descripcion }}</td>
+                            <td>{{ solicitud.ausencia.fechaInicio }}</td>
+                            <td>{{ solicitud.ausencia.fechaFin }}</td>
+                            <td>{{ solicitud.ausencia.motivoAusencia }}</td>
+                            <td class="estado">{{ solicitud.estadoSolicitud}}</td>
+                            <!-- <td>
+                                {% if solicitud.ausencia.comprobante %}
+                                    <a href="{% url 'ver_comprobante' solicitud.numSolicitud %}" target="_blank">Ver Comprobante</a>
+                                {% else %}
+                                    No hay comprobante
+                                {% endif %}
+                            </td> -->
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="approval-buttons">
+                <div id="BotonOff" style="display: none;">
+                    {% csrf_token %}
+                    <form id="approval-form" method="post" >
+                        {% csrf_token %}
+                        <input type="hidden" id="registro_id" name="registro_id">
+                        <input type="hidden" id="accion" name="accion">
+                        {% if usuario.is_superuser %}
+                            <button class="approve-deny-button" id="aprobarBtn" type="button" onclick="seleccionarRegistro(id),submitApprovalForm('Aprobada')">Aprobar</button>
+                            <button class="approve-deny-button" id="denegarBtn" type="button" onclick="seleccionarRegistro(id),submitApprovalForm('Denegada')">Denegar</button>
+                        {% endif %}
+                    </form>
+                </div>
+                {% if not usuario.is_superuser %}
+                    <button class="solicitar-button" type="button" onclick="toggleAbsenceForm(),OcultarBotones()" >Solicitar Ausencia</button>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+        <form method="post" enctype="multipart/form-data">
+        <div id="Iniciar-invisible">
+            {% csrf_token %}
+            <div class="form-group" >
+                <label for="motivo">Seleccione el motivo de su ausencia:</label>
+                <select id="motivoAusencia" name="motivoAusencia" required>
+                    <option value="">Seleccione una opcion</option>
+                    <option value="Enfermedad">Enfermedad</option>
+                    <option value="Matrimonio">Matrimonio</option>
+                    <option value="Mudanza">Mudanza</option>
+                    <option value="Familiar">Nacimiento, fallecimiento, accidente o enfermedad grave de un familiar</option>
+                    <option value="Deberes">Deberes inexcusables</option>
+                    <option value="Prenatal">Exámenes prenatales o técnicas de preparación al parto</option>
+                    <option value="Sindical">Funciones sindicales</option>
+                    <option value="Nacimiento">Nacimiento de hijos, lactancia y relacionados</option>
+                    <option value="Otros">Otros</option>
+                </select>
+            </div>
+        
+            <div class="description-container" >
+                <label for="descripcion">Descripción:</label>
+                <textarea id="descripcion" rows="4" name="descripcion"></textarea>
+            </div>
+            <div class="calendar-container">
+                <label for="calendar">Días inicio solicitado:</label>
+                <input type="date" id="fechaInicio" value="2024-05-15" name="fechaInicio">
+                <label for="calendar">Día final solicitado:</label>
+                <input type="date" id="fechaFinal" value="2024-05-15" name="fechaFinal">
+            </div>
+            <!-- <div class="form-group ">
+                <label for="comprobante"><i>Agregar comprobante:</i></label>
+                <div class="file-button">
+                    <input type="file" id="comprobante" name="comprobante" accept="image/*" class="file-input" onchange="previewFile()">
+                    <label for="comprobante" class="texto-boton-comprobante"><i>Archivo</i></label>
+                </div>
+            </div>
+            <div id="preview" class="preview-container" style="display: none;">
+                <label>Vista previa:</label>
+                <img id="preview-image" src="#" alt="Vista previa" style="max-width: 100%; max-height: 200px;">
+            </div> -->
+            <div class="button-group">
+                <form action="/ausencia/" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <button type="submit">Guardar</button>
+                </form>
+                <form action="/ausencia/" method="get">
+                    <button id="cancelarBtn" class="cancelarBtn">Cancelar</button>
+                </form>
+            </div>
+        </div>
+        </form> 
+    </div>
+</body>
+</html>
+<script>
+    
+    
+        const aprobarBtn=document.getElementById('aprobarBtn');
+        const denegarBtn=document.getElementById('denegarBtn');
+        const table = document.getElementById('absence-table');
+        
+    
+        let selectedRow = null;
+
+        table.addEventListener('click', function(event) {
+            if (event.target.tagName === 'TD') {
+                if (selectedRow) {
+                    selectedRow.classList.remove('selected');
+                }
+                selectedRow = event.target.parentElement;
+                selectedRow.classList.add('selected');
+
+                const registroId = selectedRow.getAttribute('data-id');
+                
+
+                aprobarBtn.dataset.id = registroId;
+                denegarBtn.dataset.id = registroId;
+            }
+        });
+
+
+        function toggleAbsenceForm() {
+            var form = document.getElementById('Iniciar-invisible');
+            if (form.style.display === 'none' || form.style.display === '') {
+                form.style.display = 'block';
+            } else {
+                form.style.display = 'none';
+            }
+        }
+
+        function seleccionarRegistro(id) {
+            // Deseleccionar todos los registros
+            var registros = document.querySelectorAll('.registro');
+            registros.forEach(function(registro) {
+                registro.classList.remove('seleccionado');
+            });
+
+            // Seleccionar el registro clickeado
+            var registroSeleccionado = document.getElementById(id);
+            registroSeleccionado.classList.add('seleccionado');
+            document.getElementById('registro_id').value = id;
+        }
+
+        function MostrarBotones() {
+                var form = document.getElementById('BotonOff');
+                if (form.style.display === 'none' || form.style.display === '') {
+                    form.style.display = 'block';
+                } else {
+                    form.style.display = 'block';
+                }
+        }
+
+        function OcultarBotones() {
+            
+        }
+
+        function submitApprovalForm(accion) {
+            const registroId = aprobarBtn.dataset.id;
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            var formData = new FormData();
+            formData.append('registro_id', registroId);
+            formData.append('accion', accion);
+
+            fetch("{% url 'cambiar_estado' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const registroSeleccionado = document.querySelector(`tr[data-id='${registroId}'] .estado`);
+                    registroSeleccionado.textContent = data.new_state;
+                    alert('Estado actualizado con éxito');
+                } else {
+                    alert('Error al actualizar el estado');
+                }
+                document.getElementById('BotonOff').style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al actualizar el estado');
+            });
+        }
+
+        function previewFile() {
+        var preview = document.getElementById('preview');
+        var fileInput = document.getElementById('comprobante');
+        var file = fileInput.files[0];
+        var previewImage = document.getElementById('preview-image');
+
+        if (file) {
+            var reader = new FileReader();
+
+            reader.onloadend = function() {
+                preview.style.display = 'block';
+                previewImage.src = reader.result;
+            }
+
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+            previewImage.src = '#';
+        }
+        }
+        function redirectTo(url){
+            window.location.href=url;
+        }
+</script>

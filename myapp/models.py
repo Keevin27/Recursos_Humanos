@@ -19,16 +19,18 @@ class Empleado(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class Ausencia(models.Model):
-    motivoAusencia = models.TextField()
+  
+    motivoAusencia = models.CharField(max_length=50)
     descripcion = models.TextField()
     fechaInicio = models.DateField()
     fechaFin = models.DateField()
-
+    comprobante = models.ImageField(upload_to='comprobantes/', null=True, blank=True)
 
 class Solicitud(models.Model):
+   
     numSolicitud = models.IntegerField()
     fechaSolicitud = models.DateField(auto_now_add=True)
-    estadoSolicitud = models.CharField(max_length=8)
+    estadoSolicitud = models.CharField(max_length=20, default='revision')
     solicitante = models.ForeignKey(Empleado,on_delete=models.CASCADE)
     ausencia = models.ForeignKey(Ausencia, on_delete=models.CASCADE)
 

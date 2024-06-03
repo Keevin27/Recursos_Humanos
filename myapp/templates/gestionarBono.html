@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -46,7 +45,7 @@
         </section>
         <section>
             <div class="container2">
-                <h2>Lista de Bonos</h2>
+                <h2>{% if user.is_superuser %}Lista de Bonos{% else %}Mis bonos{% endif %}</h2>
                 <table id="registros-bonos">
                     <thead>
                         <tr>

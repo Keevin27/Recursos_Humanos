@@ -3,12 +3,138 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from datetime import datetime, date
+from .models import Empleado
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import random
+from django.shortcuts import render,redirect
+from .models import Solicitud
+from .models import Ausencia,Empleado,Reporte
+from django.contrib.auth.models import User
+from datetime import date
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
+
+
 from .models import Empleado, Bono
 import random, string
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 # Create your views here.
+
+@login_required
+def crearReporte(request,empleadoId):
+    usuario=request.user
+    if usuario.is_superuser:
+        reportes = Reporte.objects.all()
+        empleado = get_object_or_404(Empleado, pk = empleadoId)
+    else:
+        empleado=Empleado.objects.get(user=usuario)
+        reportes = Reporte.objects.filter(empleado=empleado)
+
+    if request.method == 'GET':
+        return render(request,'reportes.html',{'reportes':reportes,'empleado':empleado,'usuario':usuario})
+    else:
+        descripcionReporte = request.POST.get('descripcion')
+        if descripcionReporte == '':
+            return JsonResponse({'status':'error','messagge':'agregue una descripcion'},status=400)
+        else:
+            if Reporte.objects.exists() == False:
+                numReporte=1
+                reporte = Reporte(numReporte=numReporte,descripcionReporte=descripcionReporte,empleado=empleado)
+                reporte.save()
+            
+            else:
+                num = Reporte.objects.all().order_by('numReporte').last()
+                numReporte=num.numReporte + 1
+                reporte = Reporte(numReporte=numReporte,descripcionReporte=descripcionReporte,empleado=empleado)
+                reporte.save()
+
+    return redirect('/reportes/'+ empleadoId)
+
+@csrf_exempt
+def eliminarReporte(request, reporte_id):
+    if request.method == 'DELETE':
+        try:
+            reporte = Reporte.objects.get(id=reporte_id)
+            reporte.delete()
+            return JsonResponse({'message': 'Reporte eliminado correctamente'}, status=200)
+        except Reporte.DoesNotExist:
+            return JsonResponse({'error': 'Reporte no encontrado'}, status=404)
+    else:
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
+@login_required
+def crearAusencia(request):
+    usuario = request.user
+    if usuario.is_superuser:
+        solicitudes = Solicitud.objects.all()
+    else:
+        emplea=Empleado.objects.get(user=usuario)
+        solicitudes = Solicitud.objects.filter(solicitante=emplea)
+    context = {
+        'usuario': usuario,
+        'solicitudes': solicitudes
+    }
+
+    
+    if request.method == 'GET':
+        return render(request, 'solicitud.html',context)
+    
+    else:
+        motivoAusencia = request.POST['motivoAusencia']
+        descripcion = request.POST.get('descripcion')
+        fechaInicio = request.POST.get('fechaInicio')
+        fechaFinal = request.POST.get('fechaFinal')
+        # comprobante = request.FILES.get('comprobante ')
+        
+        
+        if fechaInicio <= fechaFinal :
+            ausencia = Ausencia(motivoAusencia= motivoAusencia, descripcion = descripcion, fechaInicio=fechaInicio,fechaFin=fechaFinal)
+            ausencia.save()
+
+            if Solicitud.objects.exists() == False:
+                numSolicitud= 1
+            else: 
+                soli=Solicitud.objects.all().order_by('numSolicitud').last()
+                numSolicitud=soli.numSolicitud+1
+            
+            empleado=Empleado.objects.get(user=usuario)
+            solicitud= Solicitud(numSolicitud=numSolicitud,ausencia=ausencia,solicitante=empleado)
+            solicitud.save()
+
+        else:
+
+            return JsonResponse({'status': 'error','message':'conflicto en fechas'}, status=400)
+    return redirect('/ausencia/')  # Redirigir a la página de lista de solicitudes
+
+# def ver_comprobante(request, numSolicitud):
+#     solicitud = get_object_or_404(Solicitud, numSolicitud=numSolicitud)
+#     comprobante_url = solicitud.ausencia.comprobante.url
+#     return render(request, 'ver_comprobante.html', {'comprobante_url': comprobante_url})
+
+def cambiar_estado(request):
+    if request.method == "POST":
+        registro_id = request.POST.get('registro_id')
+        accion = request.POST.get('accion')
+
+        if not registro_id or not accion:
+            return JsonResponse({'status': 'error', 'message': 'Datos faltantes'}, status=400)
+
+        try:
+            registro_id = int(registro_id)
+        except ValueError:
+            return JsonResponse({'status': 'error', 'message': 'ID de registro inválido'}, status=400)
+
+        solicitud = get_object_or_404(Solicitud, numSolicitud=registro_id)
+        solicitud.estadoSolicitud = accion
+        solicitud.save()
+
+        return JsonResponse({'status': 'success', 'new_state': solicitud.estadoSolicitud})
+    else:
+        return JsonResponse({'status': 'error'}, status=405)
+    
 @login_required
 def gestionarEmpleado(request):
     empleados = Empleado.objects.all()
@@ -120,8 +246,13 @@ def cerrarSesion(request):
 
 @login_required
 def gestionarBono(request, empleadoId):
-    bonos = Bono.objects.all()
-    empleado = get_object_or_404(Empleado, pk = empleadoId)
+    usuario = request.user
+    if usuario.is_superuser:
+        bonos = Bono.objects.all()
+        empleado = get_object_or_404(Empleado, pk = empleadoId)
+    else:
+        empleado=Empleado.objects.get(user=usuario)
+        bonos = Bono.objects.filter(empleado=empleado)
     return render(request, 'gestionarBono.html', {'bonos':bonos, 'empleado':empleado})
 
 def generate_code(length=6):

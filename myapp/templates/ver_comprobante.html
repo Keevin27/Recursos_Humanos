@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ver Comprobante</title>
+    <!-- Incluye aquí tu CSS -->
+</head>
+<body>
+    <div class="container">
+        <h1>Comprobante de Solicitud N° {{ solicitud.numSolicitud }}</h1>
+        <p><strong>Nombre solicitante:</strong> {{ solicitud.solicitante.nombre }}</p>
+        <p><strong>Fecha de solicitud:</strong> {{ solicitud.fechaSolicitud }}</p>
+        <p><strong>Fecha de inicio:</strong> {{ solicitud.ausencia.fechaInicio }}</p>
+        <p><strong>Fecha final:</strong> {{ solicitud.ausencia.fechaFin }}</p>
+        <p><strong>Motivo:</strong> {{ solicitud.ausencia.motivoAusencia }}</p>
+        <p><strong>Descripción:</strong> {{ solicitud.ausencia.descripcion }}</p>
+        <p><strong>Estado de solicitud:</strong> {{ solicitud.estadoSolicitud }}</p>
+
+        <!-- {% if solicitud.ausencia.comprobante %}
+            <p><strong>Comprobante:</strong></p>
+            <embed src="{{ solicitud.ausencia.comprobante.url }}" type="application/pdf" width="600" height="400">
+        {% else %}
+            <p>No hay comprobante adjunto.</p>
+        {% endif %} -->
+    </div>
+</body>
+</html>

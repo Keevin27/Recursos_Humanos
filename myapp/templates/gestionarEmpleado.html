@@ -1,3 +1,6 @@
+{% extends 'base.html' %}
+
+{% block content %}
 {% load static %}
 
 <!DOCTYPE html>
@@ -133,7 +136,7 @@
         reportarBtn.addEventListener('click', function() {
             if (!this.classList.contains('disabled')) {
                 const id = this.dataset.id;
-                window.location.href = `/gestionar_empleado/actualizar_empleado/${id}`;
+                window.location.href = `/reportes/${id}`;
             }
         });
         bonificarBtn.addEventListener('click', function() {
@@ -161,10 +164,11 @@
                 window.location.href = '/gestionar_empleado/ingresar_empleado';
             });
         ausenciaBtn.addEventListener('click', function() {
-                window.location.href = '/gestionar_empleado/';
+                window.location.href = '/ausencia/';
             });
         planillaBtn.addEventListener('click', function() {
                 window.location.href = '/gestionar_empleado/';
             });
     });
 </script>
+{% endblock %}
