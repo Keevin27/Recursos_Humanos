@@ -14,7 +14,10 @@ from django.contrib.auth.models import User
 from datetime import date
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-
+import json
+from django.views.decorators.http import require_POST
+from .models import Titulo
+from decimal import Decimal, ROUND_HALF_UP
 
 from .models import Empleado, Bono
 import random, string
@@ -291,6 +294,8 @@ def crearBono(request, empleadoId):
             monto = request.POST['montoBono']
             bono = Bono(codigo = codigo, justificacion=justificacion, monto=monto, empleado=empleado)
             bono.save()
+            empleado.monto_total_bonos += Decimal(monto)
+            empleado.save()
             return redirect('/gestionar_bono/'+empleadoId)
         except:
             return redirect('/gestionar_bono/'+empleadoId)
@@ -309,3 +314,102 @@ def error_404_view(request, exception):
 
 def error_500_view(request):
     return render(request, '500.html', status=500)
+
+@login_required
+def planilla_view(request):
+    # Ejemplo de datos de empleados
+    empleados = Empleado.objects.all()
+    
+    empleados_data = []
+    for empleado in empleados:
+        empleados_data.append({
+            'id': empleado.id,
+            'codigo': empleado.codigo,
+            'nombre': empleado.nombre,
+            'apellido': empleado.apellido,
+            'area': empleado.area,
+            'bono': float(empleado.monto_total_bonos),
+            'sueldo': float(empleado.sueldo),
+            'total_ingresos': float(empleado.total_ingresos()),
+            'iss': float(empleado.iss()),
+            'afp': float(empleado.afp()),
+            'renta_mensual': float(empleado.renta_mensual()),
+            'total_descuentos': float(empleado.total_descuentos()),
+            'sueldo_neto': float(empleado.sueldo_neto()),
+            'hora_extra_diurna': float(empleado.horaExtraDia) if empleado.horaExtraDia is not None else 0.0,
+            'hora_extra_nocturna': float(empleado.horaExtraNoche) if empleado.horaExtraNoche is not None else 0.0,
+            
+        })
+    
+    context = {
+        'mes_actual': 'Mayo',  # Ejemplo de mes actual, puedes cambiarlo según sea necesario
+        'empleados_data': empleados_data,
+        'empleados_json': json.dumps(empleados_data)
+    }
+    
+    return render(request, 'planilla.html', context)
+@require_POST
+def actualizar_datos_empleado(request):
+    empleado_id = request.POST.get('empleado_id')
+    horas_extras_diurnas = request.POST.get('horas_extras_diurnas')
+    horas_extras_nocturnas = request.POST.get('horas_extras_nocturnas')
+
+    # Actualiza los datos del empleado en la base de datos
+    empleado = Empleado.objects.get(id=empleado_id)
+    empleado.horaExtraDia = horas_extras_diurnas
+    empleado.horaExtraNoche = horas_extras_nocturnas
+    empleado.save()
+
+    # Retorna una respuesta JSON
+    return JsonResponse({'status': 'ok'})
+
+@login_required
+def administrarTitulo(request, empleadoId):
+ empleado = get_object_or_404(Empleado, id=empleadoId)
+    
+ if request.method == 'POST':
+        tipo = request.POST.get('tipo')
+        nombre_especialidad = request.POST.get('nombreEspecialidad')
+        institucion = request.POST.get('institucion')
+        anio_titulacion = request.POST.get('anioTitulacion')
+        
+        titulo = Titulo.objects.create(
+            tipo=tipo,
+            nombre_especialidad=nombre_especialidad,
+            institucion=institucion,
+            anio_titulacion=anio_titulacion,
+            empleado=empleado
+        )
+        
+        # Actualizar la lista de títulos después de crear uno nuevo
+        titulos_data = list(Titulo.objects.filter(empleado=empleado).values())
+
+        return JsonResponse({
+            'id': titulo.id,
+            'tipo': titulo.tipo,
+            'nombre_especialidad': titulo.nombre_especialidad,
+            'institucion': titulo.institucion,
+            'anio_titulacion': titulo.anio_titulacion,
+        })
+
+ if request.method == 'GET':
+        # Obtener la lista de títulos en el método GET
+        titulos_data = list(Titulo.objects.filter(empleado=empleado).values())
+
+        return JsonResponse(titulos_data, safe=False)
+
+ context = {
+        'empleado': empleado,
+        'titulos': titulos_data,  # Pasar los títulos al contexto de la plantilla
+    }
+
+ return render(request, 'expediente.html', context)
+
+@login_required
+def Personal_view(request, empleadoId):
+    empleado = get_object_or_404(Empleado, pk=empleadoId)
+    context = {
+        'empleado': empleado,
+    }
+    return render(request, 'expediente.html', context)
+

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <title>Planilla del Mes de {{ mes_actual }}</title>
+        <style>   
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+      }
+
+     h1 {
+        text-align: center;
+        margin-top: 20px;
+     }
+
+     table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background-color: #fff;
+     }
+
+     table, th, td {
+        border: 1px solid #ddd;
+     }
+
+     th, td {
+        padding: 10px;
+        text-align: left;
+     }
+
+     th {
+        background-color: #f2f2f2;
+     }
+
+     .form-container {
+        margin-top: 20px;
+        display: none;
+     }
+
+     .form-container.active {
+        display: block;
+        background-color: #fff;
+        padding: 20px;
+        border: 1px solid #ddd;
+     }
+
+     label {
+        display: block;
+        margin-bottom: 5px;
+     }
+
+     input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+     }
+
+     button {
+        padding: 10px 20px;
+        background-color: #4c77af;
+        color: white;
+        border: none;
+        cursor: pointer;
+        margin-top: 20px;
+        
+     }
+
+     button:hover {
+        background-color: #4c77af;
+     }
+
+     button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+     }
+     .disabled {
+        pointer-events: none;
+        opacity: 0.6;
+        }
+     .selected {
+        background-color: #f2f2f2;
+        }
+     </style>
+</head>
+<body>
+<h1>Planilla del Mes de {{ mes_actual }}</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Área</th>
+            <th>Sueldo</th>
+            <th>Bono</th>
+            <th>Hora extra diurna</th>
+            <th>Hora extra nocturna</th>
+            <th>Total ingresos</th>
+            <th>ISS</th>
+            <th>AFP</th>
+            <th>Renta Mensual</th>
+            <th>Total descuentos</th>
+            <th>Sueldo neto</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for empleado in empleados_data %}
+        <tr onclick="seleccionarEmpleado('{{ empleado.id }}')" id="empleado-{{ empleado.id }}">
+            <td>{{ empleado.codigo }}</td>
+            <td>{{ empleado.nombre }}</td>
+            <td>{{ empleado.apellido }}</td>
+            <td>{{ empleado.area }}</td>
+            <td>{{ empleado.sueldo }}</td>
+            <td id="bono-{{ empleado.id }}">{{ empleado.bono }}</td>
+            <td id="hora_extra_diurna-{{ empleado.id }}">{{ empleado.hora_extra_diurna }}</td>
+            <td id="hora_extra_nocturna-{{ empleado.id }}">{{ empleado.hora_extra_nocturna }}</td>
+            <td id="total_ingresos-{{ empleado.id }}">{{ empleado.total_ingresos }}</td>
+            <td id="iss-{{ empleado.id }}">{{ empleado.iss }}</td>
+            <td id="afp-{{ empleado.id }}">{{ empleado.afp }}</td>
+            <td id="renta_mensual-{{ empleado.id }}">{{ empleado.renta_mensual }}</td>
+            <td id="total_descuentos-{{ empleado.id }}">{{ empleado.total_descuentos }}</td>
+            <td id="sueldo_neto-{{ empleado.id }}">{{ empleado.sueldo_neto }}</td>
+            
+        </tr>
+        {% endfor %}
+    </tbody>
+ </table>
+
+ <div class="button-container">
+    <button type="button" id="modificar-button" class="disabled" onclick="mostrarFormulario()">Modificar</button>
+ </div>
+
+ <div class="form-container" id="form-container">
+    <form method="post">
+        {% csrf_token %}
+        <fieldset>
+            <legend>Datos de planilla</legend>
+            <p>Mes: {{ mes_actual }}</p>
+            <p>Nombre: <span id="detalle-nombre"></span></p>
+            <label for="sueldo">Sueldo:</label>
+            <input type="text" id="sueldo" name="sueldo" readonly><br>
+            <label for="horas_extras_diurnas">Horas extras diurnas:</label>
+            <input type="text" id="horas_extras_diurnas" name="horas_extras_diurnas" required><br>
+            <label for="horas_extras_nocturnas">Horas extra nocturnas:</label>
+            <input type="text" id="horas_extras_nocturnas" name="horas_extras_nocturnas" required><br>
+            <div class="button-container">
+                <button type="button" onclick="calcularTotales()">Aceptar</button>
+                <button type="button" id="cancel-button">Cancelar</button>
+            </div>
+            
+            
+        </fieldset>
+    </form>
+ </div>
+
+    <script>
+        const empleadosData = JSON.parse('{{ empleados_json|escapejs }}');
+        let empleadoSeleccionado = null;
+
+        function seleccionarEmpleado(id) {
+            if (empleadoSeleccionado) {
+                document.getElementById('empleado-' + empleadoSeleccionado).classList.remove('selected');
+            }
+            empleadoSeleccionado = id;
+            document.getElementById('empleado-' + id).classList.add('selected');
+            document.getElementById('modificar-button').classList.remove('disabled');
+
+        
+        }
+
+        function mostrarFormulario() {
+            if (!empleadoSeleccionado) return;
+
+            const empleado = empleadosData.find(e => e.id === parseInt(empleadoSeleccionado));
+
+            if (empleado) {
+                document.getElementById('detalle-nombre').innerText = `${empleado.nombre} ${empleado.apellido}`;
+                document.getElementById('sueldo').value = empleado.sueldo;
+                document.getElementById('horas_extras_diurnas').value = 0;
+                document.getElementById('horas_extras_nocturnas').value = 0;
+                document.getElementById('form-container').classList.add('active');
+            }
+        }
+
+        document.getElementById('cancel-button').addEventListener('click', function() {
+            document.getElementById('form-container').classList.remove('active');
+            document.getElementById('modificar-button').classList.add('disabled');
+            if (empleadoSeleccionado) {
+                document.getElementById('empleado-' + empleadoSeleccionado).classList.remove('selected');
+                empleadoSeleccionado = null;
+            }
+        });
+
+        function calcularTotales() {
+            const horasExDiurnas = parseFloat(document.getElementById('horas_extras_diurnas').value) || 0;
+            const horasExNocturnas = parseFloat(document.getElementById('horas_extras_nocturnas').value) || 0;
+            
+
+
+            const empleado = empleadosData.find(e => e.id === parseInt(empleadoSeleccionado));
+            if (empleado) {
+                const sueldo = parseFloat(empleado.sueldo) || 0;
+                const bono = parseFloat(empleado.bono) || 0;
+                const montoHorasExDiurnas = horasExDiurnas * 1.5;
+                const montoHorasExNocturnas = horasExNocturnas * 2;
+
+                const totalIngresos = sueldo + montoHorasExDiurnas + montoHorasExNocturnas+bono;
+                const iss = parseFloat(empleado.iss) || 0;
+                const afp = parseFloat(empleado.afp) || 0;
+                const rentaMensual = parseFloat(empleado.renta_mensual) || 0;
+                const totalDescuentos = iss + afp + rentaMensual;
+                const sueldoNeto = totalIngresos - totalDescuentos;
+
+                // Actualizar los valores en el formulario
+                document.getElementById('sueldo').value = sueldo.toFixed(2);
+                document.getElementById('horas_extras_diurnas').value = horasExDiurnas.toFixed(2);
+                document.getElementById('horas_extras_nocturnas').value = horasExNocturnas.toFixed(2);
+
+                // Actualizar los valores en la tabla
+                const filaEmpleado = document.getElementById('empleado-' + empleado.id);
+                filaEmpleado.querySelector('#hora_extra_diurna-' + empleado.id).innerText = montoHorasExDiurnas.toFixed(2);
+                filaEmpleado.querySelector('#hora_extra_nocturna-' + empleado.id).innerText = montoHorasExNocturnas.toFixed(2);
+                filaEmpleado.querySelector('#total_ingresos-' + empleado.id).innerText = totalIngresos.toFixed(2);
+                filaEmpleado.querySelector('#iss-' + empleado.id).innerText = iss.toFixed(2);
+                filaEmpleado.querySelector('#afp-' + empleado.id).innerText = afp.toFixed(2);
+                filaEmpleado.querySelector('#renta_mensual-' + empleado.id).innerText = rentaMensual.toFixed(2);
+                filaEmpleado.querySelector('#total_descuentos-' + empleado.id).innerText = totalDescuentos.toFixed(2);
+                filaEmpleado.querySelector('#sueldo_neto-' + empleado.id).innerText = sueldoNeto.toFixed(2);
+
+                // Guardar los cambios en la base de datos
+                const formData = new FormData();
+                formData.append('horas_extras_diurnas', montoHorasExDiurnas);
+                formData.append('horas_extras_nocturnas', montoHorasExNocturnas);
+                formData.append('empleado_id', empleado.id);
+
+                fetch('/actualizar_datos_empleado/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Datos actualizados:', data);
+                })
+                .catch(error => {
+                    console.error('Error al actualizar los datos:', error);
+                });
+            }
+        }
+
+        // Evitar que se puedan seleccionar múltiples empleados
+        const filasEmpleados = document.querySelectorAll('tbody tr');
+        filasEmpleados.forEach(fila => {
+            fila.addEventListener('click', function() {
+                const idEmpleado = this.getAttribute('id').replace('empleado-', '');
+                if (empleadoSeleccionado !== idEmpleado) {
+                    seleccionarEmpleado(idEmpleado);
+                }
+            });
+        });
+        
+    </script>
+</body>
+</html>

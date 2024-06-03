@@ -1,0 +1,342 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expediente del Empleado</title>
+    <style>
+        body, html {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #f5f5f5;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            background-color: #f1f1f1;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .tabs a {
+            text-decoration: none;
+            color: black;
+            padding: 10px 20px;
+        }
+        .tabs a:hover {
+            background-color: #ddd;
+            border-radius: 5px;
+        }
+        .profile {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .profile img {
+            border: 1px solid black;
+            width: 100px;
+            height: 100px;
+            margin-right: 10px;
+            margin-top: -540px;
+        }
+        .profile-details {
+            flex: 1;
+        }
+        table {
+            width: 70%;
+            border-collapse: collapse;
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 20px;
+            text-align: left;
+           
+        }
+        table th {
+            background-color: #f2f2f2;
+        }
+        table tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+        table tbody tr:hover {
+            background-color: #d3d3d3;
+        }
+        footer {
+            background-color: #4ca0af;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+            position: absolute;
+            width: 100%;
+            bottom: 0;
+        }
+        button {
+        padding: 10px 20px;
+        background-color: #4c77af;
+        color: white;
+        border: none;
+        cursor: pointer;
+        margin-top: 20px;
+        
+     }
+
+     button:hover {
+        background-color: #4c77af;
+     }
+    </style>
+</head>
+
+<div class="container">
+    <div class="tabs">
+        <a href="#personal" onclick="mostrarPestana('personal')">Información Personal</a>
+        <a href="#educacion" onclick="mostrarPestana('educacion')">Educación</a>
+       
+        
+    </div>
+
+    <div id="personal" class="content">
+        <div class="profile">
+            {% load static %}
+            
+        
+       <div class="profile-details">
+        <h2>Información Personal</h2>
+       
+        <table>
+            <tr>
+                <th>Nombre</th>
+                <td>{{ empleado.nombre }}</td>
+            </tr>
+            <tr>
+                <th>Apellidos</th>
+                <td>{{ empleado.apellido }}</td>
+            </tr>
+            <tr>
+                <th>Fecha de nacimiento</th>
+                <td>{{ empleado.Fecha|date:"d/m/Y" }}</td>
+            </tr>
+            <tr>
+                <th>Sexo</th>
+                <td>{{ empleado.sexo }}</td>
+            </tr>
+            <tr>
+                <th>Estado civil</th>
+                <td>{{ empleado.estadoCivil }}</td>
+            </tr>
+            <tr>
+                <th>Nacionalidad</th>
+                <td>{{ empleado.nacionalidad }}</td>
+            </tr>
+            <tr>
+                <th>Dui</th>
+                <td>{{ empleado.dui }}</td>
+            </tr>
+            <tr>
+                <th>Sueldo</th>
+                <td>{{ empleado.sueldo }}</td>
+            </tr>
+            <tr>
+                <th>Dirección</th>
+                <td>{{ empleado.direccion }}</td>
+            </tr>
+            <tr>
+                <th>Área</th>
+                <td>{{ empleado.area }}</td>
+            </tr>
+            <tr>
+                <th>Grado académico</th>
+                <td>{{ empleado.gradoAcademico }}</td>
+            </tr>
+            <tr>
+               <th>Numero telefonico<th>
+                <td>{{empelado.telefono}}</td>
+              
+            </tr>
+            <tr>
+                <th>Código</th>
+                <td>{{ empleado.codigo }}</td>
+            </tr>
+            
+        </table>
+        <input type="hidden" id="empleado-id" value="{{ empleado.id }}">
+    </div>
+</div>
+</div>
+    </div>
+</div>
+
+    <div id="educacion" class="content" style="display:none;">
+    
+        <div class="container">
+            <h2>Administrar Mis Títulos</h2>
+            <table id="tablaTitulos">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Nombre de la especialidad</th>
+                        <th>Institución</th>
+                        <th>Año de titulación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for titulo in titulos %}
+                    <tr>
+                        <td>{{ titulo.tipo }}</td>
+                        <td>{{ titulo.nombre_especialidad }}</td>
+                        <td>{{ titulo.institucion }}</td>
+                        <td>{{ titulo.anio_titulacion }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+    
+            <form id="formAgregarTitulo" method="post" style="display: none;">
+                {% csrf_token %}
+                
+                <label for="tipo">Tipo:</label>
+                <input type="text" id="tipo" name="tipo" required>
+                <label for="nombreEspecialidad">Nombre de la especialidad:</label>
+                <input type="text" id="nombreEspecialidad" name="nombreEspecialidad" required>
+                <label for="institucion">Institución:</label>
+                <input type="text" id="institucion" name="institucion" required>
+                <label for="anioTitulacion">Año de titulación:</label>
+                <input type="number" id="anioTitulacion" name="anioTitulacion" required>
+                <button id="btnAgregarTitulo" type="button" onclick="agregarTitulo()" >Agregar Título</button>
+            </form>
+    
+            <button id="btnAgregar" onclick="mostrarFormulario()">Agregar</button>
+        </div>
+    
+        
+    
+    </div>
+   
+
+    
+   <script>
+
+// Script JavaScript
+
+
+</script>
+
+
+
+ 
+   </script>
+    
+</div>
+
+<script>
+    function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+ }
+
+    function mostrarPestana(id) {
+        // Ocultar todas las pestañas
+        var tabs = document.getElementsByClassName('content');
+        for (var i = 0; i < tabs.length; i++) {
+            tabs[i].style.display = 'none';
+        }
+        
+        // Mostrar la pestaña seleccionada
+        document.getElementById(id).style.display = 'block';
+    }
+    mostrarPestana('personal');
+     function mostrarFormulario() {
+                var form = document.getElementById('formAgregarTitulo');
+                var button = document.getElementById('btnAgregar');
+                form.style.display = 'block';
+                button.style.display = 'none';
+            }
+    function agregarTitulo() {
+            var form = document.getElementById('formAgregarTitulo');
+            var tipo = document.getElementById('tipo').value;
+            var nombreEspecialidad = document.getElementById('nombreEspecialidad').value;
+            var institucion = document.getElementById('institucion').value;
+            var anioTitulacion = document.getElementById('anioTitulacion').value;
+            var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            var empleadoId = document.getElementById('empleado-id').value;
+
+            var data = new FormData();
+            data.append('tipo', tipo);
+            data.append('nombreEspecialidad', nombreEspecialidad);
+            data.append('institucion', institucion);
+            data.append('anioTitulacion', anioTitulacion);
+            data.append('csrfmiddlewaretoken', csrfToken);
+
+            fetch('/gestionar_empleado/expediente/' + empleadoId + '/administrarTitulo/', {
+                method: 'POST',
+                body: data,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.id) {
+                    var table = document.getElementById('tablaTitulos').getElementsByTagName('tbody')[0];
+                    var newRow = table.insertRow();
+                    newRow.insertCell(0).textContent = data.tipo;
+                    newRow.insertCell(1).textContent = data.nombre_especialidad;
+                    newRow.insertCell(2).textContent = data.institucion;
+                    newRow.insertCell(3).textContent = data.anio_titulacion;
+                    form.style.display = 'none';
+                    document.getElementById('btnAgregar').style.display = 'block';
+                    form.reset();
+                } else {
+                    console.error('Failed to save the title. Data:', data);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+window.onload = function() {
+        var empleadoId = document.getElementById('empleado-id').value;
+        
+        fetch('/gestionar_empleado/expediente/' + empleadoId + '/administrarTitulo/', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Mostrar los títulos en la tabla
+            var table = document.getElementById('tablaTitulos').getElementsByTagName('tbody')[0];
+            data.forEach(titulo => {
+                var newRow = table.insertRow();
+                newRow.insertCell(0).textContent = titulo.tipo;
+                newRow.insertCell(1).textContent = titulo.nombre_especialidad;
+                newRow.insertCell(2).textContent = titulo.institucion;
+                newRow.insertCell(3).textContent = titulo.anio_titulacion;
+            });
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    
+
+</script>
+
+{% endblock %}

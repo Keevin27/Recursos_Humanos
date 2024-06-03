@@ -134,4 +134,36 @@
     function redirectTo(url){
         window.location.href=url;
     }
+    function enviarBono(empleadoId) {
+    const montoBono = document.getElementById('montoBono').value;
+    const justificacion = document.getElementById('justificacion').value;
+    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+    fetch('gestionar_empleado/planilla/' + empleadoId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            montoBono: montoBono,
+            justificacion: justificacion
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error al crear el bono');
+        }
+        return response.json();
+    })
+    .then(data => {
+        alert('Bono creado con éxito');
+        
+        window.location.href = 'gestionar_empleado/planilla';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al crear el bono');
+    });
+}
 </script>
