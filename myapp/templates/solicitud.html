@@ -186,7 +186,11 @@
     </style>
 </head>
 <body>
+    {% if user.id_superuser %}
     <button id="regresarBtn" onclick="redirectTo('/gestionar_empleado/')"><i class="fas fa-arrow-left"></i>Regresar</button>
+    {% else %}
+    <button id="regresarBtn" onclick="redirectTo('/gestionar_empleado/expediente/{{ empleadoId }}')"><i class="fas fa-arrow-left"></i>Regresar></button>
+    {% endif %}
     <form method="post">
     <div class="container">
         

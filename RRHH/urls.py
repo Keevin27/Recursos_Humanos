@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from myapp.views import iniciarSesion, cerrarSesion, ingresarEmpleado, gestionarEmpleado, actualizarEmpleado, eliminarEmpleado, gestionarBono, crearBono, actualizarBono, eliminarBono
-from myapp.views import crearAusencia,cambiar_estado,crearReporte,eliminarReporte
+from myapp.views import crearAusencia,cambiar_estado,crearReporte,eliminarReporte,planilla_view,actualizar_datos_empleado,administrarTitulo,Personal_view
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -39,5 +39,9 @@ urlpatterns = [
     path('cambiar_estado/', cambiar_estado,name='cambiar_estado'),
     path('reportes/<empleadoId>/',crearReporte, name='crearReporte'),
     path('reportes/eliminar_reporte/<int:reporte_id>/',eliminarReporte, name='eliminar_reporte'),
+    path('gestionar_empleado/planilla/',planilla_view,name='planilla'),
+    path('actualizar_datos_empleado/', actualizar_datos_empleado, name='actualizar_datos_empleado'),
+    path('gestionar_empleado/expediente/<int:empleadoId>/', Personal_view, name='expediente_empleado'),
+    path('gestionar_empleado/expediente/<int:empleadoId>/administrarTitulo/', administrarTitulo, name='administrar_titulo'),
     
 ]
